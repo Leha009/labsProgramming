@@ -11,7 +11,7 @@ typedef struct
 {
     char* name;                         //Название
     char* address;                      //Адрес
-    float* fuelPrices;                 //Ниже цены на топливо(92,95,98,дизель)
+    float* fuelPrices;                  //Ниже цены на топливо(92,95,98,дизель)
     int* rating;                        //Рейтинг АЗС(1-10)
     int* stuff;                         //Кол-во сотрудников
 } GSDesc;
@@ -25,10 +25,17 @@ typedef struct List
 int Menu();                                     //Меню
 int ListActions();                              //Действия со списком
 void OutputMenu(Gaslist*);                      //Меню вывода
+void OutputItem(GSDesc);                        //Меню выбора вывода информации об АЗС
+Gaslist* InputMenu(Gaslist*);                       //Меню выбора ввода
 
-int ListLen(Gaslist*);                         //Длина списка
-Gaslist* DeleteItem(Gaslist*);                      //Удаление элемента из списка
+int ListLen(Gaslist*);                          //Длина списка
+Gaslist* DeleteItem(Gaslist*);                  //Удаление элемента из списка   WTF?!??!?!? удаляет рандомно
+Gaslist* SortByRating(Gaslist*);                //Сортировка по рейтингу убыв   СДЕЛАТЬ
+void Swap(Gaslist*);                            //Поменять местами    СДЕЛАТЬ
+void GetItem(Gaslist*);                         //Вывод n-й АЗС
 
+Gaslist* PushBack(Gaslist*);                    //Добавление в конец
+Gaslist* PushForward(Gaslist*);                 //Добавление в начало
 Gaslist* InputStations();                       //Ввод данных об АЗС
 Gaslist* Process(Gaslist*);                     //Обработка данных
 
@@ -36,6 +43,8 @@ int PrepareStruct(Gaslist*);                    //Выделение памяти для полей стр
 
 void OutputGasStationsTable(Gaslist*);          //Вывод информации в виде таблицы
 void OutputGasStationsText(Gaslist*);           //Вывод информации в виде текста
+void OutputStationTable(GSDesc);                //Вывод информации об 1 АЗС в виде таблицы
+void OutputStationText(GSDesc);                 //Вывод информации об 1 АЗС в виде текста
 
 void free_station(Gaslist*);                    //Освобождение памяти одной АЗС
 void free_list(Gaslist*);                       //Освобождение памяти списка АЗС
@@ -52,8 +61,9 @@ int main()
         switch(MenuItem)
         {
             case 1:
-                free_list(First);
-                First = InputStations();
+                First = InputMenu(First);
+                //free_list(First);
+                //First = InputStations();
                 break;
             case 2:
                 if(First != NULL) OutputMenu(First);
@@ -63,7 +73,7 @@ int main()
                     system("pause");
                 }
                 break;
-            case 3: //do while
+            case 3:
                 do
                 {
                     MenuItem = ListActions();
@@ -78,6 +88,7 @@ int main()
                             First = DeleteItem(First);
                             break;
                         case 3:
+                            GetItem(First);
                             //Swap
                             break;
                         case 4:
@@ -134,7 +145,7 @@ int ListActions()
     int selected;
     puts("****************МЕНЮ****************");
     puts("1 - Узнать количество элементов списка АЗС");
-    puts("2 - Удалить элемент списка АЗС(не удаляет 1, если len> 1)");
+    puts("2 - Удалить элемент списка АЗС");
     puts("3 - Поменять местами элементы списка АЗС(НЕ ДОСТУПНО)");
     puts("4 - Сортировка элементов списка АЗС(НЕ ДОСТУПНО)");
     puts("5 - Назад");
@@ -165,6 +176,57 @@ void OutputMenu(Gaslist* first)
         fflush(stdin);
         if(item == 1) OutputGasStationsTable(first);
         else if(item == 2) OutputGasStationsText(first);
+    }while(item);
+}
+
+Gaslist* InputMenu(Gaslist* Stations)                       //Меню выбора ввода
+{
+    system("cls");
+    int item;
+    do
+    {
+        system("cls");
+        puts("****************Вывод****************");
+        puts("1 - Добавить в начало");
+        puts("2 - Добавить в конец");
+        puts("3 - Ввести полностью заново");
+        puts("4 - Назад");
+        do
+        {
+            scanf("%d", &item);
+            if(item < 0 || item > 4) puts("Данного пункта меню не существует");
+        } while(item < 0 || item > 4);
+        fflush(stdin);
+        if(item == 1) Stations = PushForward(Stations);
+        else if(item == 2) Stations = PushBack(Stations);
+        else if(item == 3)
+        {
+            free_list(Stations);
+            Stations = InputStations();
+        }
+    }while(item != 4);
+    return Stations;
+}
+
+void OutputItem(GSDesc Station)
+{
+    system("cls");
+    int item;
+    do
+    {
+        system("cls");
+        puts("****************Вывод****************");
+        puts("1 - В виде таблицы");
+        puts("2 - В виде текста");
+        puts("0 - Назад");
+        do
+        {
+            scanf("%d", &item);
+            if(item < 0 || item > 2) puts("Данного пункта меню не существует");
+        } while(item < 0 || item > 2);
+        fflush(stdin);
+        if(item == 1) OutputStationTable(Station);
+        else if(item == 2) OutputStationText(Station);
     }while(item);
 }
 //------------------------------------------------------ДЕЙСТВИЯ СО СПИСКОМ------------------------------------------------------
@@ -201,12 +263,12 @@ Gaslist* DeleteItem(Gaslist* Stations)
             temp = NULL;
         }
     }
-    if(num > 1)
+    else
     {
         toDel = temp->next;
         while(num > 2)
         {
-            temp = Stations->next;
+            temp = temp->next;
             toDel = temp->next;
             num--;
         }
@@ -214,7 +276,28 @@ Gaslist* DeleteItem(Gaslist* Stations)
         free_station(toDel);
     }
     system("pause");
+    printf("%p", first);
     return first;
+}
+
+void GetItem(Gaslist* Stations)
+{
+    system("cls");
+    Gaslist* result = Stations;
+    int num;
+    printf("Введите номер элемента, который хотите вывести(всего %d элементов): ", ListLen(Stations));
+    do
+    {
+        scanf("%d", &num);
+        if(num < 1 || num > ListLen(Stations)) printf("Элемента под таким номером нет. Введите от 1 до %d\n", ListLen(Stations));
+    } while(num < 1 || num > ListLen(Stations));
+    num-=1;
+    while(num)
+    {
+        result = result->next;
+        num--;
+    }
+    OutputItem(result->Station);
 }
 //------------------------------------------------------ВВОД------------------------------------------------------
 void InputText(char* string)
@@ -261,16 +344,32 @@ Gaslist* InputStations()
             buff->next = NULL;
             if(PrepareStruct(buff))
             {
+                system("cls");
                 puts("Введите название АЗС");
                 InputText(buff->Station.name);
                 puts("\nВведите адрес");
                 InputText(buff->Station.address);
-                puts("\nВведите цены на топливо(92,95,98,Дизель)");
-                for(i = 0; i < 4; i++) scanf("%f", buff->Station.fuelPrices+i);
-                puts("Введите рейтинг АЗС");
-                scanf("%d", buff->Station.rating);
+                puts("\nВведите цены на топливо(92,95,98,Дизель). Цена не выше 10000");
+                for(i = 0; i < 4; i++)
+                {
+                    do
+                    {
+                        scanf("%f", buff->Station.fuelPrices+i);
+                        if(buff->Station.fuelPrices[i] < 1.0 || buff->Station.fuelPrices[i] > 10000.0) puts("Цена от 1 до 10000");
+                    } while(buff->Station.fuelPrices[i] < 1.0 || buff->Station.fuelPrices[i] > 10000.0);
+                }
+                puts("Введите рейтинг АЗС от 1 до 10");
+                do
+                {
+                    scanf("%d", buff->Station.rating);
+                    if(*(buff->Station.rating) < 1 || *(buff->Station.rating) > 10) puts("Рейтинг от 1 до 10!");
+                } while(*(buff->Station.rating) < 1 || *(buff->Station.rating) > 10);
                 puts("Введите количество сотрудников");
-                scanf("%d", buff->Station.stuff);
+                do
+                {
+                    scanf("%d", buff->Station.stuff);
+                    if(*(buff->Station.stuff) < 1 || *(buff->Station.stuff) > 1000000) puts("Кол-во сотрудников от 1 до 1000000");
+                } while(*(buff->Station.stuff) < 1 || *(buff->Station.stuff) > 1000000);
                 puts("Если хотите продолжить ввод данных, введите любое число, отличное от нуля");
                 scanf("%d", &f);
             }
@@ -279,26 +378,52 @@ Gaslist* InputStations()
                 buff->next = (Gaslist*)malloc(sizeof(Gaslist));
                 buff = buff->next;
             }
+            else
+                buff->next = NULL;
         }
     }
     system("pause");
     return first;
 }
+
+Gaslist* PushForward(Gaslist* Stations)                     //Добавление в начало
+{
+    Gaslist* temp = NULL;
+    Gaslist* connector = NULL;
+    temp = InputStations();
+    for(connector = temp->next ; connector->next != NULL ; connector = temp->next);//ТУТ
+    connector->next = Stations;
+    return temp;
+}
+
+Gaslist* PushBack(Gaslist* Stations)                    //Добавление в конец
+{
+    Gaslist* temp = NULL;
+    Gaslist* connector;
+    temp = InputStations();
+    connector = temp;
+    if(Stations != NULL)
+    {
+        for(connector = Stations->next ; connector->next != NULL ; connector = connector->next);//ТУТ
+        connector->next = temp;
+        connector = Stations;
+    }
+    return connector;
+}
 //------------------------------------------------------ВЫВОД------------------------------------------------------
 void OutputGasStationsTable(Gaslist* first)
 {
+    fflush(stdout);
     system("cls");
     int namelen,
         addresslen;
     Gaslist* buff = first;
-    namelen = 0, addresslen = 0;
+    namelen = 8, addresslen = 5;
     for(; buff != NULL; buff = buff->next)
     {
         if(strlen(first->Station.name) > namelen) namelen = strlen(first->Station.name);
         if(strlen(first->Station.address) > addresslen) addresslen = strlen(first->Station.address);
     }
-    if(namelen < 8) namelen = 8;
-    if(addresslen < 5) addresslen = 5;
     printf("|%*s|%*s|Цена 92 бензина|Цена 95 бензина|Цена 98 бензина|Цена дизеля|Рейтинг|Сотрудников|\n", namelen, "Название", addresslen, "Адрес");
 	for(; first != NULL; first = first->next)
 		printf("|%*s|%*s|%15.2f|%15.2f|%15.2f|%11.2f|%7d|%11d|\n", namelen, first->Station.name, addresslen, first->Station.address,
@@ -323,6 +448,33 @@ void OutputGasStationsText(Gaslist* first)
     system("pause");
 }
 
+void OutputStationTable(GSDesc Station)                //Вывод информации об 1 АЗС в виде таблицы
+{
+    system("cls");
+    int namelen,
+        addresslen;
+    namelen = 8, addresslen = 5;
+    if(strlen(Station.name) > namelen) namelen = strlen(Station.name);
+    if(strlen(Station.address) > addresslen) addresslen = strlen(Station.address);
+    printf("|%*s|%*s|Цена 92 бензина|Цена 95 бензина|Цена 98 бензина|Цена дизеля|Рейтинг|Сотрудников|\n", namelen, "Название", addresslen, "Адрес");
+    printf("|%*s|%*s|%15.2f|%15.2f|%15.2f|%11.2f|%7d|%11d|\n", namelen, Station.name, addresslen, Station.address,
+         Station.fuelPrices[0], Station.fuelPrices[1], Station.fuelPrices[2], Station.fuelPrices[3], *(Station.rating), *(Station.stuff));
+    system("pause");
+}
+
+void OutputStationText(GSDesc Station)                 //Вывод информации об 1 АЗС в виде текста
+{
+    system("cls");
+    int i;
+    printf("Название: %s", Station.name);
+    printf("\nАдрес: %s", Station.address);
+    printf("\nЦены(92,95,98,Дизель): ");
+    for(i = 0; i < 4; i++) printf("%.2f ", Station.fuelPrices[i]);
+    printf("\nРейтинг: %d", *(Station.rating));
+    printf("\nКоличество сотрудников: %d", *(Station.stuff));
+    printf("\n\n");
+    system("pause");
+}
 //------------------------------------------------------ПАМЯТЬ------------------------------------------------------
 int PrepareStruct(Gaslist* first)
 {
