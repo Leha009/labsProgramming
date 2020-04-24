@@ -13,7 +13,6 @@ typedef struct Gaslist
     char* address;                          //Адрес
     float fuelPrices[4];                    //Ниже цены на топливо(92,95,98,дизель)
     int rating;                             //Рейтинг АЗС(1-10)
-    int stuff;                              //Кол-во сотрудников
     struct Gaslist* next;                   //Ссылка на следующую структуру
 } GSDesc;
 
@@ -25,9 +24,9 @@ GSDesc* InputMenu(GSDesc*);                     //Меню выбора ввода
 
 int ListLen(GSDesc*);                           //Длина списка
 GSDesc* DeleteItem(GSDesc*);                    //Удаление элемента из списка
-GSDesc* SortByRating(GSDesc*);                  //Сортировка по рейтингу убыв   СДЕЛАТЬ
+GSDesc* SortByRating(GSDesc*);                  //Сортировка по рейтингу по убыванию
 void Swap(GSDesc**);                            //Поменять местами
-//void GetItem(GSDesc*);                        //Вывод АЗС по заданным параметрам СДЕЛАТЬ
+void GetItem(GSDesc*);                          //Вывод АЗС по заданным параметрам
 
 GSDesc* PushBack(GSDesc*);                      //Добавление в конец
 GSDesc* PushForward(GSDesc*);                   //Добавление в начало
@@ -56,8 +55,6 @@ int main()
         {
             case 1:
                 First = InputMenu(First);
-                //free_list(First);
-                //First = InputStations();
                 break;
             case 2:
                 if(First != NULL) OutputMenu(First);
@@ -84,13 +81,16 @@ int main()
                                 First = DeleteItem(First);
                                 break;
                             case 3:
-                                //GetItem(First);
                                 Swap(&First);
                                 break;
                             case 4:
+                                First = SortByRating(First);
+                                break;
+                            case 5:
+                                GetItem(First);
                                 break;
                         }
-                    } while(MenuItem != 5);
+                    } while(MenuItem != 6);
                 }
                 else
                 {
@@ -148,14 +148,15 @@ int ListActions()
     puts("****************МЕНЮ****************");
     puts("1 - Узнать количество элементов списка АЗС");
     puts("2 - Удалить элемент списка АЗС");
-    puts("3 - Поменять местами элементы списка АЗС(НЕ ДОСТУПНО)");
-    puts("4 - Сортировка элементов списка АЗС(НЕ ДОСТУПНО)");
-    puts("5 - Назад");
+    puts("3 - Поменять местами элементы списка АЗС");
+    puts("4 - Сортировка элементов списка АЗС по рейтингу(по убыв.)");
+    puts("5 - Поиск АЗС по определенному критерию");
+    puts("6 - Назад");
     do
     {
         scanf("%d", &selected);
-        if(selected < 0 || selected > 5) puts("Данного пункта меню не существует");
-    } while(selected < 0 || selected > 5);
+        if(selected < 0 || selected > 6) puts("Данного пункта меню не существует");
+    } while(selected < 0 || selected > 6);
     fflush(stdin);
     return selected;
 }
@@ -261,16 +262,54 @@ GSDesc* DeleteItem(GSDesc* Stations)
     return first;
 }
 
-/*void GetItem(GSDesc* Stations)
+GSDesc* SortByRating(GSDesc* Stations)                  //Сортировка по рейтингу по убыванию
+{
+    GSDesc* result = NULL;
+    GSDesc* temp = NULL;
+    GSDesc* buff = NULL;
+    int num,
+        i;
+    for(num = 10; ListLen(result) != ListLen(Stations) ; num--)
+    {
+        for(temp = Stations ; temp != NULL ; temp = temp->next)
+        {
+            if(temp->rating == num)
+            {
+                if(result == NULL)
+                {
+                    result = (GSDesc*)malloc(sizeof(GSDesc));
+                    buff = result;
+                    CopyStruct(result, temp);
+                }
+                else
+                {
+                    buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                    buff = buff->next;
+                    CopyStruct(buff, temp);
+                }
+            }
+        }
+    }
+    if(result == NULL) puts("Упс... Что-то пошло не так! Попробуйте еще раз!");
+    else puts("Сортировка прошла успешно!");
+    free_list(Stations);
+    system("pause");
+    return result;
+}
+
+void GetItem(GSDesc* Stations)
 {
     system("cls");
     GSDesc* result = NULL;
-    GSDesc* buff = Stations;
-    int ans;
-    puts("Выберите категорию, по которой мы ищем");
-    puts("1 - Цены на топливо");
+    GSDesc* buff = NULL;
+    GSDesc* temp = NULL;
+    int ans,
+        num;
+    float price;
+    puts("Выберете категорию, по которой мы ищем");
+    puts("1 - Цена на топливо");
     puts("2 - Рейтинг");
-    puts("3 - Количество сотрудников");
+    puts("3 - Отмена");
     do
     {
         scanf("%d", &ans);
@@ -278,20 +317,70 @@ GSDesc* DeleteItem(GSDesc* Stations)
     } while(ans < 1 || ans > 3);
     if(ans == 1)
     {
+        puts("\nВыберете, по цене какого топлива будем искать\n1 - 92 бензин\n2 - 95 бензин\n3 - 98 бензин\n4 - Дизель");
         do
         {
-            s
-        } while(buff != NULL);
+            scanf("%d", &num);
+            if(num < 1 || num > 4) puts("Введите от 1 до 4");
+        } while(num < 1 || num > 4);
+        printf("\nВведите цену, по которой будем искать: ");
+        do
+        {
+            scanf("%f", &price);
+            if(price < 1) puts("Цена должна быть выше 1!");
+        } while(price < 1);
+        for(temp = Stations; temp != NULL; temp = temp->next)
+        {
+            if(temp->fuelPrices[num-1] == price)
+            {
+                if(result == NULL)
+                {
+                    result = (GSDesc*)malloc(sizeof(GSDesc));
+                    buff = result;
+                    CopyStruct(buff, temp);
+                }
+                else
+                {
+                    buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                    buff = buff->next;
+                    CopyStruct(buff, temp);
+                }
+            }
+        }
     }
     else if(ans == 2)
     {
-        s
+        printf("Введите рейтинг, по которому будем искать(от 1 до 10): ");
+        do
+        {
+            scanf("%d", &num);
+            if(num < 1 || num > 10) puts("Рейтинг должен быть от 1 до 10!");
+        } while(num < 1 || num > 10);
+        for(temp = Stations; temp != NULL; temp = temp->next)
+        {
+            if(temp->rating == num)
+            {
+                if(result == NULL)
+                {
+                    result = (GSDesc*)malloc(sizeof(GSDesc));
+                    buff = result;
+                    CopyStruct(buff, temp);
+                }
+                else
+                {
+                    buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                    buff = buff->next;
+                    CopyStruct(buff, temp);
+                }
+            }
+        }
     }
-    else
-    {
-        s
-    }
-}*/
+    if(ans != 3)
+        if(result != NULL) OutputMenu(result);
+        else
+            puts("Ничего не найдено!"), system("pause");
+    free_list(result);
+}
 
 GSDesc* Process(GSDesc* Stations)                     //Обработка данных
 {
@@ -472,12 +561,6 @@ GSDesc* InputStations()
                     scanf("%d", &(buff->rating));
                     if(buff->rating < 1 || buff->rating > 10) puts("Рейтинг от 1 до 10!");
                 } while(buff->rating < 1 || buff->rating > 10);
-                puts("Введите количество сотрудников");
-                do
-                {
-                    scanf("%d", &(buff->stuff));
-                    if(buff->stuff < 1 || buff->stuff > 1000000) puts("Кол-во сотрудников от 1 до 1000000");
-                } while(buff->stuff < 1 || buff->stuff > 1000000);
                 puts("Если хотите продолжить ввод данных, введите любое число, отличное от нуля");
                 scanf("%d", &f);
             }
@@ -505,10 +588,10 @@ void OutputGasStationsTable(GSDesc* first)
         if(strlen(buff->name) > namelen) namelen = strlen(buff->name);
         if(strlen(buff->address) > addresslen) addresslen = strlen(buff->address);
     }
-    printf("|%*s|%*s|Цена 92 бензина|Цена 95 бензина|Цена 98 бензина|Цена дизеля|Рейтинг|Сотрудников|\n", namelen, "Название", addresslen, "Адрес");
+    printf("|%*s|%*s|Цена 92 бензина|Цена 95 бензина|Цена 98 бензина|Цена дизеля|Рейтинг|\n", namelen, "Название", addresslen, "Адрес");
 	for(buff = first; buff != NULL; buff = buff->next)
-		printf("|%*s|%*s|%15.2f|%15.2f|%15.2f|%11.2f|%7d|%11d|\n", namelen, buff->name, addresslen, buff->address,
-         buff->fuelPrices[0], buff->fuelPrices[1], buff->fuelPrices[2], buff->fuelPrices[3], buff->rating, buff->stuff);
+		printf("|%*s|%*s|%15.2f|%15.2f|%15.2f|%11.2f|%7d|\n", namelen, buff->name, addresslen, buff->address,
+         buff->fuelPrices[0], buff->fuelPrices[1], buff->fuelPrices[2], buff->fuelPrices[3], buff->rating);
     system("pause");
 }
 
@@ -525,7 +608,6 @@ void OutputGasStationsText(GSDesc* first)
         printf("\nЦены(92,95,98,Дизель): ");
         for(i = 0; i < 4; i++) printf("%.2f ", buff->fuelPrices[i]);
         printf("\nРейтинг: %d", buff->rating);
-        printf("\nКоличество сотрудников: %d", buff->stuff);
         printf("\n\n");
     }
     system("pause");
@@ -541,7 +623,6 @@ int PrepareStruct(GSDesc* first)
         first->address = (char*)malloc((MAXLEN+1)*sizeof(char));
         for(i = 0; i < 4; i++) first->fuelPrices[i] = 0;
         first->rating = 0;
-        first->stuff = 0;
         first->next = NULL;
         res++;
     }
@@ -585,6 +666,5 @@ void CopyStruct(GSDesc* ThisStation, GSDesc* OtherStation)
         for(i = 0; i < 4; i++)
             ThisStation->fuelPrices[i] = OtherStation->fuelPrices[i];
         ThisStation->rating = OtherStation->rating;
-        ThisStation->stuff = OtherStation->stuff;
     }
 }
