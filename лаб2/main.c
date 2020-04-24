@@ -9,39 +9,39 @@
 
 typedef struct Gaslist
 {
-    char* name;                         //Название
-    char* address;                      //Адрес
-    float fuelPrices[4];                  //Ниже цены на топливо(92,95,98,дизель)
-    int rating;                        //Рейтинг АЗС(1-10)
-    int stuff;                         //Кол-во сотрудников
-    struct Gaslist* next;                      //Ссылка на следующую структуру
+    char* name;                             //Название
+    char* address;                          //Адрес
+    float fuelPrices[4];                    //Ниже цены на топливо(92,95,98,дизель)
+    int rating;                             //Рейтинг АЗС(1-10)
+    int stuff;                              //Кол-во сотрудников
+    struct Gaslist* next;                   //Ссылка на следующую структуру
 } GSDesc;
 
 /*----------------------------ФУНКЦИИ------------------------------*/
 int Menu();                                     //Меню
 int ListActions();                              //Действия со списком
-void OutputMenu(GSDesc*);                      //Меню вывода
-GSDesc* InputMenu(GSDesc*);                   //Меню выбора ввода
+void OutputMenu(GSDesc*);                       //Меню вывода
+GSDesc* InputMenu(GSDesc*);                     //Меню выбора ввода
 
-int ListLen(GSDesc*);                          //Длина списка
-GSDesc* DeleteItem(GSDesc*);                  //Удаление элемента из списка
-GSDesc* SortByRating(GSDesc*);                //Сортировка по рейтингу убыв   СДЕЛАТЬ
-void Swap(GSDesc*);                            //Поменять местами    СДЕЛАТЬ
-//void GetItem(GSDesc*);                         //Вывод АЗС по заданным параметрам СДЕЛАТЬ
+int ListLen(GSDesc*);                           //Длина списка
+GSDesc* DeleteItem(GSDesc*);                    //Удаление элемента из списка
+GSDesc* SortByRating(GSDesc*);                  //Сортировка по рейтингу убыв   СДЕЛАТЬ
+void Swap(GSDesc**);                            //Поменять местами
+//void GetItem(GSDesc*);                        //Вывод АЗС по заданным параметрам СДЕЛАТЬ
 
-GSDesc* PushBack(GSDesc*);                    //Добавление в конец
-GSDesc* PushForward(GSDesc*);                 //Добавление в начало
-GSDesc* InputStations();                       //Ввод данных об АЗС
-GSDesc* Process(GSDesc*);                     //Обработка данных
+GSDesc* PushBack(GSDesc*);                      //Добавление в конец
+GSDesc* PushForward(GSDesc*);                   //Добавление в начало
+GSDesc* InputStations();                        //Ввод данных об АЗС
+GSDesc* Process(GSDesc*);                       //Обработка данных
 
-int PrepareStruct(GSDesc*);                    //Выделение памяти для полей структуры
+int PrepareStruct(GSDesc*);                     //Выделение памяти для полей структуры
 void CopyStruct(GSDesc*, GSDesc*);              //Копирование структуры
 
-void OutputGasStationsTable(GSDesc*);          //Вывод информации в виде таблицы
-void OutputGasStationsText(GSDesc*);           //Вывод информации в виде текста
+void OutputGasStationsTable(GSDesc*);           //Вывод информации в виде таблицы
+void OutputGasStationsText(GSDesc*);            //Вывод информации в виде текста
 
-void free_station(GSDesc*);                    //Освобождение памяти одной АЗС
-void free_list(GSDesc*);                       //Освобождение памяти списка АЗС
+void free_station(GSDesc*);                     //Освобождение памяти одной АЗС
+void free_list(GSDesc*);                        //Освобождение памяти списка АЗС
 /*-----------------------------------------------------------------*/
 int main()
 {
@@ -68,27 +68,35 @@ int main()
                 }
                 break;
             case 3:
-                do
+                if(First != NULL)
                 {
-                    MenuItem = ListActions();
-                    switch(MenuItem)
+                    do
                     {
-                        case 1:
-                            len = ListLen(First);
-                            printf("Количество элементов в списке: %d\n",len);
-                            system("pause");
-                            break;
-                        case 2:
-                            First = DeleteItem(First);
-                            break;
-                        case 3:
-                            //GetItem(First);
-                            //Swap
-                            break;
-                        case 4:
-                            break;
-                    }
-                } while(MenuItem != 5);
+                        MenuItem = ListActions();
+                        switch(MenuItem)
+                        {
+                            case 1:
+                                len = ListLen(First);
+                                printf("Количество элементов в списке: %d\n",len);
+                                system("pause");
+                                break;
+                            case 2:
+                                First = DeleteItem(First);
+                                break;
+                            case 3:
+                                //GetItem(First);
+                                Swap(&First);
+                                break;
+                            case 4:
+                                break;
+                        }
+                    } while(MenuItem != 5);
+                }
+                else
+                {
+                    puts("Сначала введите список АЗС в пункте 1!");
+                    system("pause");
+                }
                 break;
             case 4:
                 if(First != NULL) GResult = Process(First);
@@ -315,6 +323,91 @@ GSDesc* Process(GSDesc* Stations)                     //Обработка данных
     system("pause");
     return result;
 }
+
+GSDesc* PushForward(GSDesc* Stations)                     //Добавление в начало
+{
+    GSDesc* temp = NULL;
+    GSDesc* connector = NULL;
+    temp = InputStations();
+    for(connector = temp ; connector->next != NULL ; connector = connector->next);
+    connector->next = Stations;
+    return temp;
+}
+
+GSDesc* PushBack(GSDesc* Stations)                    //Добавление в конец
+{
+    GSDesc* temp = NULL;
+    GSDesc* connector;
+    temp = InputStations();
+    connector = temp;
+    if(Stations != NULL)
+    {
+        for(connector = Stations->next ; connector->next != NULL ; connector = connector->next);
+        connector->next = temp;
+        connector = Stations;
+    }
+    return connector;
+}
+
+void Swap(GSDesc** Stations)                             //Поменять местами
+{
+    GSDesc* gFirst = NULL;
+    GSDesc* gSecond = NULL;
+    GSDesc* buff = NULL;
+    GSDesc* buff2 = NULL;
+    GSDesc* buff3 = NULL;
+    int first,
+        second,
+        temp,
+        i,
+        j;
+    printf("Введите 2 номера элементов, которые хотите поменять местами(всего %d элементов): ", ListLen(*Stations));
+    do
+    {
+        scanf("%d %d", &first, &second);
+        if(first < 1 || second < 1 || first > ListLen(*Stations) || second > ListLen(*Stations)) printf("Данных элементов нет в списке, выберите от 1 до %d\n", ListLen(*Stations));
+    } while(first < 1 || second < 1 || first > ListLen(*Stations) || second > ListLen(*Stations));
+    if(first != second)
+    {
+        if(first > second)
+        {
+            temp = second;
+            second = first;
+            first = second;
+        }
+        for(i = 1, gFirst = *Stations; i < first; i++, gFirst = gFirst->next);
+        for(i = 1, gSecond = *Stations; i < second; i++, gSecond = gSecond->next);
+        if(first == 1)
+        {
+            for(buff = *Stations; buff->next != gSecond; buff = buff->next);
+            buff->next = gFirst;
+            buff = gFirst->next;
+            buff2 = gSecond->next;
+            gFirst->next = buff2;
+            gSecond->next = buff;
+            *Stations = gSecond;
+        }
+        else if(second - first == 1)
+        {
+            for(buff = *Stations; buff->next != gFirst; buff = buff->next);
+            buff->next = gSecond;
+            buff2 = gSecond->next;
+            gSecond->next = gFirst;
+            gFirst->next = buff2;
+        }
+        else
+        {
+            for(buff = *Stations; buff->next != gFirst; buff = buff->next);
+            for(buff2 = *Stations; buff2->next != gSecond; buff2 = buff2->next);
+            buff3 = gFirst->next;
+            buff->next = gSecond;
+            buff2->next = gFirst;
+            gFirst->next = gSecond->next;
+            gSecond->next = buff3;
+        }
+    }
+    system("pause");
+}
 //------------------------------------------------------ВВОД------------------------------------------------------
 void InputText(char* string)
 {
@@ -398,31 +491,6 @@ GSDesc* InputStations()
     system("pause");
     return first;
 }
-
-GSDesc* PushForward(GSDesc* Stations)                     //Добавление в начало
-{
-    GSDesc* temp = NULL;
-    GSDesc* connector = NULL;
-    temp = InputStations();
-    for(connector = temp ; connector->next != NULL ; connector = connector->next);
-    connector->next = Stations;
-    return temp;
-}
-
-GSDesc* PushBack(GSDesc* Stations)                    //Добавление в конец
-{
-    GSDesc* temp = NULL;
-    GSDesc* connector;
-    temp = InputStations();
-    connector = temp;
-    if(Stations != NULL)
-    {
-        for(connector = Stations->next ; connector->next != NULL ; connector = connector->next);
-        connector->next = temp;
-        connector = Stations;
-    }
-    return connector;
-}
 //------------------------------------------------------ВЫВОД------------------------------------------------------
 void OutputGasStationsTable(GSDesc* first)
 {
@@ -480,17 +548,17 @@ int PrepareStruct(GSDesc* first)
     return res;
 }
 
-void free_station(GSDesc* List)
+void free_station(GSDesc* Station)
 {
-    if(List != NULL)
+    if(Station != NULL)
     {
-        free(List->name);
-        List->name = NULL;
-        free(List->address);
-        List->address = NULL;
-        free(List->next);
-        List->next = NULL;
-        List = NULL;
+        free(Station->name);
+        Station->name = NULL;
+        free(Station->address);
+        Station->address = NULL;
+        //free(Station->next); тут проблема
+        Station->next = NULL;
+        Station = NULL;
     }
 }
 
@@ -499,13 +567,10 @@ void free_list(GSDesc* item)
     if(item != NULL)
     {
         GSDesc* buff = NULL;
-        for(; item != NULL;)
+        for(; item != NULL; item = buff)
         {
-            buff = item;
+            buff = item->next;
             free_station(item);
-            item = buff->next;
-            free(buff);
-            buff = NULL;
         }
     }
 }
