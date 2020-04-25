@@ -523,8 +523,7 @@ GSDesc* InputStations()
     first = (GSDesc*)malloc(sizeof(GSDesc));
     if(first != NULL)
     {
-        buff = first;
-        for(f = 1;buff != NULL && f;)
+        for(f = 1, buff = first ; buff != NULL && f ;)
         {
             if(PrepareStruct(buff))
             {
