@@ -450,7 +450,7 @@ GSDesc* PushBack(GSDesc* Stations)                    //Добавление в конец
     return connector;
 }
 
-void Swap(GSDesc** Stations)                             //Поменять местами 2 элемента ВСЕ ПЛОХО с PREV
+void Swap(GSDesc** Stations)                             //Поменять местами 2 элемента
 {
     GSDesc* gFirst = NULL;
     GSDesc* gSecond = NULL;
