@@ -14,6 +14,7 @@ typedef struct Gaslist
     float fuelPrices[4];                        //Ниже цены на топливо(92,95,98,дизель)
     int rating;                                 //Рейтинг АЗС(1-10)
     struct Gaslist* next;                       //Ссылка на следующую структуру
+    struct Gaslist* prev;                       //Ссылка на предыдущую структуру
 } GSDesc;
 
 /*----------------------------ФУНКЦИИ------------------------------*/
@@ -38,6 +39,8 @@ void CopyStruct(GSDesc*, GSDesc*);              //Копирование структуры
 
 void OutputGasStationsTable(GSDesc*);           //Вывод информации в виде таблицы
 void OutputGasStationsText(GSDesc*);            //Вывод информации в виде текста
+void OutputGasStationsTableReverse(GSDesc*);    //Вывод информации в виде таблицы с конца
+void OutputGasStationsTextReverse(GSDesc*);     //Вывод информации в виде текста с конца
 
 void free_station(GSDesc*);                     //Освобождение памяти одной АЗС
 void free_list(GSDesc*);                        //Освобождение памяти списка АЗС
@@ -174,15 +177,19 @@ void OutputMenu(GSDesc* first)
         puts("****************Вывод****************");
         puts("1 - В виде таблицы");
         puts("2 - В виде текста");
+        puts("3 - В виде таблицы, начиная с конца");
+        puts("4 - В виде текста, начиная с конца");
         puts("0 - Назад");
         do
         {
             scanf("%d", &item);
-            if(item < 0 || item > 2) puts("Данного пункта меню не существует");
-        } while(item < 0 || item > 2);
+            if(item < 0 || item > 4) puts("Данного пункта меню не существует");
+        } while(item < 0 || item > 4);
         fflush(stdin);
         if(item == 1) OutputGasStationsTable(first);
         else if(item == 2) OutputGasStationsText(first);
+        else if(item == 3) OutputGasStationsTableReverse(first);
+        else if(item == 4) OutputGasStationsTextReverse(first);
     }while(item);
 }
 
@@ -237,6 +244,7 @@ GSDesc* DeleteItem(GSDesc* Stations)
     if(num == 1)
     {
         Stations = Stations->next;
+        Stations->prev = NULL;
         free_station(temp);
         temp = NULL;
     }
@@ -250,6 +258,7 @@ GSDesc* DeleteItem(GSDesc* Stations)
             num--;
         }
         temp->next = toDel->next;
+        temp->next->prev = temp;
         free_station(toDel);
     }
     return Stations;
@@ -273,10 +282,12 @@ GSDesc* SortByRating(GSDesc* Stations)                  //Сортировка по рейтингу
                     result = (GSDesc*)malloc(sizeof(GSDesc));
                     buff = result;
                     CopyStruct(result, temp);
+                    buff->prev = NULL;
                 }
                 else
                 {
                     buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                    buff->next->prev = buff;
                     buff = buff->next;
                     CopyStruct(buff, temp);
                 }
@@ -330,10 +341,12 @@ void GetItem(GSDesc* Stations)
                     result = (GSDesc*)malloc(sizeof(GSDesc));
                     buff = result;
                     CopyStruct(buff, Stations);
+                    buff->prev = NULL;
                 }
                 else
                 {
                     buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                    buff->next->prev = buff;
                     buff = buff->next;
                     CopyStruct(buff, Stations);
                 }
@@ -357,10 +370,12 @@ void GetItem(GSDesc* Stations)
                     result = (GSDesc*)malloc(sizeof(GSDesc));
                     buff = result;
                     CopyStruct(buff, Stations);
+                    buff->prev = NULL;
                 }
                 else
                 {
                     buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                    buff->next->prev = buff;
                     buff = buff->next;
                     CopyStruct(buff, Stations);
                 }
@@ -387,10 +402,12 @@ GSDesc* Process(GSDesc* Stations)                     //Обработка данных
                 result = (GSDesc*)malloc(sizeof(GSDesc));
                 buff = result;
                 CopyStruct(buff, Stations);
+                buff->prev = NULL;
             }
             else
             {
                 buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                buff->next->prev = buff;
                 buff = buff->next;
                 CopyStruct(buff, Stations);
             }
@@ -409,8 +426,10 @@ GSDesc* PushForward(GSDesc* Stations)                     //Добавление в начало
     GSDesc* temp = NULL;
     GSDesc* connector = NULL;
     temp = InputStations();
+    temp->prev = NULL;
     for(connector = temp ; connector->next != NULL ; connector = connector->next);
     connector->next = Stations;
+    if(Stations != NULL) Stations->prev = connector;
     return temp;
 }
 
@@ -419,17 +438,19 @@ GSDesc* PushBack(GSDesc* Stations)                    //Добавление в конец
     GSDesc* temp = NULL;
     GSDesc* connector = NULL;
     temp = InputStations();
+    temp->prev = NULL;
     connector = temp;
     if(Stations != NULL)
     {
         for(connector = Stations ; connector->next != NULL ; connector = connector->next);
         connector->next = temp;
+        temp->prev = connector;
         connector = Stations;
     }
     return connector;
 }
 
-void Swap(GSDesc** Stations)                             //Поменять местами 2 элемента
+void Swap(GSDesc** Stations)                             //Поменять местами 2 элемента ВСЕ ПЛОХО с PREV
 {
     GSDesc* gFirst = NULL;
     GSDesc* gSecond = NULL;
@@ -465,6 +486,10 @@ void Swap(GSDesc** Stations)                             //Поменять местами 2 эл
             buff2 = gSecond->next;
             gFirst->next = buff2;
             gSecond->next = buff;
+            gFirst->prev = gSecond->prev;
+            gFirst->next->prev = gFirst;
+            gSecond->next->prev = gSecond;
+            gSecond->prev = NULL;
             *Stations = gSecond;
         }
         else if(second - first == 1)
@@ -474,6 +499,10 @@ void Swap(GSDesc** Stations)                             //Поменять местами 2 эл
             buff2 = gSecond->next;
             gSecond->next = gFirst;
             gFirst->next = buff2;
+
+            gSecond->prev = gFirst->prev;
+            gFirst->prev = gSecond;
+            gFirst->next->prev = gFirst;
         }
         else
         {
@@ -484,6 +513,12 @@ void Swap(GSDesc** Stations)                             //Поменять местами 2 эл
             buff2->next = gFirst;
             gFirst->next = gSecond->next;
             gSecond->next = buff3;
+
+            buff3 = gSecond->prev;
+            gSecond->prev = gFirst->prev;
+            gSecond->next->prev = gSecond;
+            gFirst->prev = buff3;
+            gFirst->next->prev = gFirst;
         }
     }
     system("pause");
@@ -527,6 +562,7 @@ GSDesc* InputStations()
     first = (GSDesc*)malloc(sizeof(GSDesc));
     if(first != NULL)
     {
+        first->prev = NULL;
         for(f = 1, buff = first ; buff != NULL && f ;)
         {
             if(PrepareStruct(buff))
@@ -557,8 +593,11 @@ GSDesc* InputStations()
             if(f)
             {
                 buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                buff->next->prev = buff;
+                //printf("%p ", buff->next->prev);
                 buff = buff->next;
             }
+            //printf("%p\n", buff->prev);
         }
     }
     system("pause");
@@ -602,6 +641,46 @@ void OutputGasStationsText(GSDesc* first)
     }
     system("pause");
 }
+
+void OutputGasStationsTableReverse(GSDesc* first)
+{
+    fflush(stdout);
+    system("cls");
+    int namelen,
+        addresslen;
+    GSDesc* buff = first;
+    namelen = 8, addresslen = 5;
+    for(; buff != NULL; buff = buff->next)
+    {
+        if(strlen(buff->name) > namelen) namelen = strlen(buff->name);
+        if(strlen(buff->address) > addresslen) addresslen = strlen(buff->address);
+    }
+    printf("|%*s|%*s|Цена 92 бензина|Цена 95 бензина|Цена 98 бензина|Цена дизеля|Рейтинг|\n", namelen, "Название", addresslen, "Адрес");
+	for(buff = first; buff->next != NULL; buff = buff->next);
+	for(; buff != NULL; buff = buff->prev)
+		printf("|%*s|%*s|%15.2f|%15.2f|%15.2f|%11.2f|%7d|\n", namelen, buff->name, addresslen, buff->address,
+         buff->fuelPrices[0], buff->fuelPrices[1], buff->fuelPrices[2], buff->fuelPrices[3], buff->rating);
+    system("pause");
+}
+
+void OutputGasStationsTextReverse(GSDesc* first)
+{
+    fflush(stdout);
+    system("cls");
+    GSDesc* buff = first;
+    int i;
+    for(; buff->next != NULL; buff = buff->next);
+    for(; buff != NULL; buff=buff->prev)
+    {
+        printf("Название: %s", buff->name);
+        printf("\nАдрес: %s", buff->address);
+        printf("\nЦены(92,95,98,Дизель): ");
+        for(i = 0; i < 4; i++) printf("%.2f ", buff->fuelPrices[i]);
+        printf("\nРейтинг: %d", buff->rating);
+        printf("\n\n");
+    }
+    system("pause");
+}
 //------------------------------------------------------ПАМЯТЬ------------------------------------------------------
 int PrepareStruct(GSDesc* Station)
 {
@@ -614,6 +693,7 @@ int PrepareStruct(GSDesc* Station)
         for(i = 0; i < 4; i++) Station->fuelPrices[i] = 0;
         Station->rating = 0;
         Station->next = NULL;
+        //Station->prev = NULL;
         res++;
     }
     return res;
@@ -628,6 +708,7 @@ void free_station(GSDesc* Station)
         free(Station->address);
         Station->address = NULL;
         Station->next = NULL;
+        Station->prev = NULL;
         free(Station);
         Station = NULL;
     }
