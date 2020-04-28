@@ -21,6 +21,7 @@ int Menu();                                     //Меню
 int ListActions();                              //Действия со списком
 void OutputMenu(GSDesc*);                       //Меню вывода
 GSDesc* InputMenu(GSDesc*);                     //Меню выбора ввода
+void Help();                                    //Справка
 
 int ListLen(GSDesc*);                           //Длина списка
 GSDesc* DeleteItem(GSDesc*);                    //Удаление элемента из списка
@@ -54,9 +55,12 @@ int main()
         switch(MenuItem)
         {
             case 1:
-                First = InputMenu(First);
+                Help();
                 break;
             case 2:
+                First = InputMenu(First);
+                break;
+            case 3:
                 if(First != NULL) OutputMenu(First);
                 else
                 {
@@ -64,7 +68,7 @@ int main()
                     system("pause");
                 }
                 break;
-            case 3:
+            case 4:
                 if(First != NULL)
                 {
                     do
@@ -94,23 +98,23 @@ int main()
                 }
                 else
                 {
-                    puts("Сначала введите список АЗС в пункте 1!");
-                    system("pause");
-                }
-                break;
-            case 4:
-                if(First != NULL) GResult = Process(First);
-                else
-                {
-                    puts("Не были введены данные. Выполните пункт 1");
+                    puts("Сначала введите список АЗС!");
                     system("pause");
                 }
                 break;
             case 5:
+                if(First != NULL) GResult = Process(First);
+                else
+                {
+                    puts("Сначала введите список АЗС!");
+                    system("pause");
+                }
+                break;
+            case 6:
                 if(GResult != NULL) OutputMenu(GResult);
                 else
                 {
-                    puts("Не была обработана информация. Выполните пункт 4");
+                    puts("Не была обработана информация, либо ни одна АЗС не подходит под условия!");
                     system("pause");
                 }
                 break;
@@ -126,17 +130,18 @@ int Menu()
     system("cls");
     int selected;
     puts("****************МЕНЮ****************");
-    puts("1 - Ввод информации об АЗС");
-    puts("2 - Вывод информации об АЗС");
-    puts("3 - Действия над списком АЗС");
-    puts("4 - Обработка данных");
-    puts("5 - Вывод данных");
+    puts("1 - Справка");
+    puts("2 - Ввод информации об АЗС");
+    puts("3 - Вывод информации об АЗС");
+    puts("4 - Действия над списком АЗС");
+    puts("5 - Обработка данных");
+    puts("6 - Вывод обработанных данных");
     puts("0 - Выход");
     do
     {
         scanf("%d", &selected);
-        if(selected < 0 || selected > 5) puts("Данного пункта меню не существует");
-    } while(selected < 0 || selected > 5);
+        if(selected < 0 || selected > 6) puts("Данного пункта меню не существует");
+    } while(selected < 0 || selected > 6);
     fflush(stdin);
     return selected;
 }
@@ -209,6 +214,23 @@ GSDesc* InputMenu(GSDesc* Stations)                       //Меню выбора ввода
         }
     }while(item != 4);
     return Stations;
+}
+
+void Help()
+{
+    system("cls");
+    puts("  Данная программа расчитана для работы над списком АЗС,");
+    puts("имеющим следующую структуру: название, адрес, цены на топливо и рейтинг");
+    puts("  Пункт 'обработка' подразумевает под собой отбор тех АЗС,");
+    puts("которые удовлетворяют следующим условиям:");
+    puts("рейтинг выше 7, цена на 98 бензин ниже 54");
+    puts("  Также Вам доступны следующие действия над списком:");
+    puts("узнать кол-во АЗС в списке, удалить одну АЗС из списка,");
+    puts("поменять местами 2 АЗС в списке, отсортировать по убыванию рейтинга");
+    puts("(при сортировке изменяется ИЗНАЧАЛЬНЫЙ список, будьте внимательны!)");
+    puts("поиск АЗС по определенному параметру\n");
+    puts("  Внимание! Кол-во букв в названии и адресе не могут превышать 80!\n");
+    system("pause");
 }
 //------------------------------------------------------ДЕЙСТВИЯ СО СПИСКОМ------------------------------------------------------
 int ListLen(GSDesc* Stations)

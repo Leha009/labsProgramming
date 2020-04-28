@@ -22,6 +22,7 @@ int MainMenu();                                 //Меню выбора работы(стек или оч
 int MenuStack();                                //Меню для стека
 int MenuQueue();                                //Меню для очереди
 void OutputMenu(GSDesc*);                       //Меню вывода
+void Help();                                    //Справка
 
 GSDesc* DeleteItem_Stack(GSDesc*);              //Удаление элемента из стека
 GSDesc* DeleteItem_Queue(GSDesc*);              //Удаление элемента из очереди
@@ -48,7 +49,6 @@ int main()
 {
     setlocale(LC_ALL, "russian");
     GSDesc*    First = NULL;                    //Начало списка
-    GSDesc*    GResult = NULL;                  //Начало списка результата
     int MenuItem, len;
     do
     {
@@ -56,6 +56,9 @@ int main()
         switch(MenuItem)
         {
             case 1:
+                Help();
+                break;
+            case 2:
                 do
                 {
                     MenuItem = MenuStack();
@@ -93,7 +96,7 @@ int main()
                 } while(MenuItem < 5);
                 if(MenuItem == 6) MenuItem = 0;
                 break;
-            case 2:
+            case 3:
                 do
                 {
                     MenuItem = MenuQueue();
@@ -131,10 +134,14 @@ int main()
                 } while(MenuItem < 5);
                 if(MenuItem == 6) MenuItem = 0;
                 break;
+            case 4:
+                free_list(First);
+                puts("Данные очищены!");
+                system("pause");
+                break;
         }
     } while(MenuItem);
     free_list(First);
-    free_list(GResult);
     return 0;
 }
 //------------------------------------------------------МЕНЮ------------------------------------------------------
@@ -142,15 +149,17 @@ int MainMenu()
 {
     system("cls");
     int selected;
-    puts("****************МЕНЮ****************");
-    puts("1 - Работать с данными, как со стеком");
-    puts("2 - Работать с данными, как с очередью");
+    puts("****************ГЛАВНОЕ МЕНЮ****************");
+    puts("1 - Справка");
+    puts("2 - Работать с данными, как со стеком");
+    puts("3 - Работать с данными, как с очередью");
+    puts("4 - Очистить введенные данные");
     puts("0 - Выход");
     do
     {
         scanf("%d", &selected);
-        if(selected < 0 || selected > 2) puts("Данного пункта меню не существует");
-    } while(selected < 0 || selected > 2);
+        if(selected < 0 || selected > 4) puts("Данного пункта меню не существует");
+    } while(selected < 0 || selected > 4);
     fflush(stdin);
     return selected;
 }
@@ -239,6 +248,20 @@ void OutputItem(GSDesc* item)
         if(selected == 1) OutputGasStationsTable(item);
         else if(selected == 2) OutputGasStationsText(item);
     }while(selected);
+}
+
+void Help()
+{
+    system("cls");
+    puts("  Данная программа предназначена для работы над списком АЗС, имеющим следующую структуру:");
+    puts("название, адрес, цены на топливо и рейтинг - в двух режимах:");
+    puts("стек(добавление, удаление и получение последнего элемента)");
+    puts("и очередь(те же действия, но с первым элементом). В каждом режиме можно вывести полный список АЗС");
+    puts("  В главном меню Вы можете выбрать режим работы");
+    puts("Стоит заметить, что, поработав в одном режиме, можно поменять его в том же главном меню");
+    puts("а введенные ранее данные не нужно будет вводить заново");
+    puts("  При желании можно очистить все данные, выбрав в главном меню подходящий пункт\n");
+    system("pause");
 }
 //------------------------------------------------------ДЕЙСТВИЯ СО СПИСКОМ------------------------------------------------------
 GSDesc* DeleteItem_Stack(GSDesc* First)

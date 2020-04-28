@@ -12,7 +12,6 @@ typedef struct
     char* address;                      //Адрес
     float* fuelPrices;                  //Ниже цены на топливо(92,95,98,дизель)
     int* rating;                        //Рейтинг АЗС(1-10)
-    int* stuff;                         //Кол-во сотрудников
 } GSDesc;
 /*----------------------------ФУНКЦИИ------------------------------*/
 int Menu();                                     //Меню
@@ -109,12 +108,6 @@ GSDesc* InputInfo(int* amount)
                 scanf("%d", Stations[j].rating);
                 if(*(Stations[j].rating) < 1 || *(Stations[j].rating) > 10) puts("1-10");
             } while(*(Stations[j].rating) < 1 || *(Stations[j].rating) > 10);
-            printf("Введите количество сотрудников: ");
-            do
-            {
-                scanf("%d", Stations[j].stuff);
-                if(*(Stations[j].stuff) < 1 || *(Stations[j].stuff) > 1000000) puts("1-1000000");
-            } while(*(Stations[j].stuff) < 1 || *(Stations[j].stuff) > 1000000);
             j++;
             puts("Введите любое число, отличное от нуля, если хотите продолжить ввод данных");
             scanf("%d", &f);
@@ -170,10 +163,10 @@ void OutputGasStationsTable(GSDesc* GasStations, int lines)
     }
     if(namelen < 8) namelen = 8;
     if(addresslen < 5) addresslen = 5;
-    printf("|%*s|%*s|Цена 92 бензина|Цена 95 бензина|Цена 98 бензина|Цена дизеля|Рейтинг|Сотрудников|\n", namelen, "Название", addresslen, "Адрес");
+    printf("|%*s|%*s|Цена 92 бензина|Цена 95 бензина|Цена 98 бензина|Цена дизеля|Рейтинг|\n", namelen, "Название", addresslen, "Адрес");
 	for(i = 0; i < lines; i++)
-		printf("|%*s|%*s|%15.2f|%15.2f|%15.2f|%11.2f|%7d|%11d|\n", namelen, GasStations[i].name, addresslen, GasStations[i].address,
-         GasStations[i].fuelPrices[0], GasStations[i].fuelPrices[1], GasStations[i].fuelPrices[2], GasStations[i].fuelPrices[3], *(GasStations[i].rating), *(GasStations[i].stuff));
+		printf("|%*s|%*s|%15.2f|%15.2f|%15.2f|%11.2f|%7d|\n", namelen, GasStations[i].name, addresslen, GasStations[i].address,
+         GasStations[i].fuelPrices[0], GasStations[i].fuelPrices[1], GasStations[i].fuelPrices[2], GasStations[i].fuelPrices[3], *(GasStations[i].rating));
     system("pause");
 }
 
@@ -189,7 +182,6 @@ void OutputGasStationsText(GSDesc* GasStations, int lines)
         printf("\nЦены(92,95,98,Дизель): ");
         for(j = 0; j < 4; j++) printf("%.2f ", GasStations[i].fuelPrices[j]);
         printf("\nРейтинг: %d", *(GasStations[i].rating));
-        printf("\nКоличество сотрудников: %d", *(GasStations[i].stuff));
         printf("\n\n");
     }
     system("pause");
@@ -213,7 +205,6 @@ GSDesc* Process(GSDesc* GasStations, int lines, int* rlines)
                 for(k = 0; k < 4; k++)
                     result[j].fuelPrices[k] = GasStations[i].fuelPrices[k];
                 *(result[j].rating) = *(GasStations[i].rating);
-                *(result[j].stuff) = *(GasStations[i].stuff);
                 //result[j] = GasStations[i];
                 //printf("%p %p\n%p %p\n", result[j].name, GasStations[i].name, result[j].address, GasStations[i].address);
                 j++;
@@ -235,7 +226,6 @@ int PrepareStruct(GSDesc* Station)
         Station->address = (char*)malloc((MAXLEN+1)*sizeof(char));
         Station->fuelPrices = (float*)malloc(4*sizeof(float));
         Station->rating = (int*)malloc(sizeof(int));
-        Station->stuff = (int*)malloc(sizeof(int));
         res++;
     }
     return res;
@@ -285,7 +275,12 @@ void OutputMenu(GSDesc* GasStations, int lines)
 void Info()
 {
     system("cls");
-    puts("Условия обработки: рейтинг выше 7, цена на 98 бензин ниже 54");
+    puts("  Данная программа расчитана для работы над списком АЗС,");
+    puts("имеющий следующую структуру: название, адрес, цены на топливо и рейтинг");
+    puts("  Пункт 'обработка' подразумевает под собой отбор тех АЗС,");
+    puts("которые удовлетворяют следующим условиям:");
+    puts("рейтинг выше 7, цена на 98 бензин ниже 54\n");
+    puts("  Внимание! Кол-во букв в названии и адресе не могут превышать 80!\n");
     system("pause");
 }
 
@@ -304,8 +299,6 @@ void free_struct(GSDesc* Stations, int lines)
             Stations[i].fuelPrices = NULL;
             free(Stations[i].rating);
             Stations[i].rating = NULL;
-            free(Stations[i].stuff);
-            Stations[i].stuff = NULL;
             free(Stations+i);
         }
         Stations = NULL;
