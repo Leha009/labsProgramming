@@ -547,7 +547,9 @@ void InputText(char* string)
                 i--;
             }
         }
-    } while(i < MAXLEN && c != 13);
+        if(c == 13 && i == 0)
+            puts("Строка не может быть пустой!");
+    } while(i < MAXLEN && (c != 13 || i == 0));
     string[i] = '\0';
     fflush(stdin);
 }
