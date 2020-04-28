@@ -289,6 +289,7 @@ GSDesc* DeleteItem_Queue(GSDesc* First)
     GSDesc* buff = NULL;
     buff = First;
     First = First->next;
+    if(First) First->prev = NULL;
     free_station(buff);
     return First;
 }
@@ -305,7 +306,6 @@ void GetItem_Stack(GSDesc* Stations)
     item->next = NULL;
     OutputItem(item);
     free_station(item);
-    item = NULL;
 }
 
 void GetItem_Queue(GSDesc* first)
@@ -318,7 +318,6 @@ void GetItem_Queue(GSDesc* first)
     item->next = NULL;
     OutputItem(item);
     free_station(item);
-    item = NULL;
 }
 
 GSDesc* Push_Queue(GSDesc* OtherStations)                     //Добавление в начало
