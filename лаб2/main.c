@@ -31,6 +31,7 @@ void GetItem(GSDesc*);                          //Вывод АЗС по заданным параметр
 
 GSDesc* PushBack(GSDesc*);                      //Добавление в конец
 GSDesc* PushForward(GSDesc*);                   //Добавление в начало
+GSDesc* PushAnyPlace(GSDesc*);                  //Добавление в любое место
 GSDesc* InputStations();                        //Ввод данных об АЗС
 GSDesc* Process(GSDesc*);                       //Обработка данных
 
@@ -197,22 +198,24 @@ GSDesc* InputMenu(GSDesc* Stations)                       //Меню выбора ввода
         puts("****************Ввод****************");
         puts("1 - Добавить в начало");
         puts("2 - Добавить в конец");
-        puts("3 - Ввести полностью заново");
-        puts("4 - Назад");
+        puts("3 - Добавить на определенное место");
+        puts("4 - Ввести полностью заново");
+        puts("5 - Назад");
         do
         {
             scanf("%d", &item);
-            if(item < 0 || item > 4) puts("Данного пункта меню не существует");
-        } while(item < 0 || item > 4);
+            if(item < 0 || item > 5) puts("Данного пункта меню не существует");
+        } while(item < 0 || item > 5);
         fflush(stdin);
         if(item == 1) Stations = PushForward(Stations);
         else if(item == 2) Stations = PushBack(Stations);
-        else if(item == 3)
+        else if(item == 3) Stations = PushAnyPlace(Stations);
+        else if(item == 4)
         {
             free_list(Stations);
             Stations = InputStations();
         }
-    }while(item != 4);
+    }while(item != 5);
     return Stations;
 }
 
@@ -445,6 +448,54 @@ GSDesc* PushBack(GSDesc* Stations)                    //Добавление в конец
         connector = Stations;
     }
     return connector;
+}
+
+GSDesc* PushAnyPlace(GSDesc* Stations)                  //Добавление в любое место
+{
+    system("cls");
+    GSDesc* temp = NULL;
+    GSDesc* connector = NULL;
+    GSDesc* buff = NULL;
+    GSDesc* buff2 = NULL;
+    int ans,
+        i,
+        len;
+    len = ListLen(Stations);
+    printf("Введите номер места, на которое хотите добавить новые АЗС(от 1 до %d)\n", len+1);
+    do
+    {
+        scanf("%d", &ans);
+        if(ans < 1 || ans > len+1) printf("Введите от 1 до %d\n", len+1);
+    } while(ans < 1 || ans > len+1);
+    temp = InputStations();
+    if(ans == 1)
+    {
+        for(connector = temp ; connector->next != NULL ; connector = connector->next);
+        connector->next = Stations;
+        Stations = temp;
+    }
+    else if(ans == len+1)
+    {
+        if(Stations != NULL)
+        {
+            for(connector = Stations ; connector->next != NULL ; connector = connector->next);
+            connector->next = temp;
+            connector = Stations;
+        }
+        else
+            Stations = temp;
+    }
+    else
+    {
+        buff = Stations;
+        for(i = 1; i < ans-1; i++)
+            buff = buff->next;
+        buff2 = buff->next;
+        for(connector = temp ; connector->next != NULL ; connector = connector->next);
+        buff->next = temp;
+        connector->next = buff2;
+    }
+    return Stations;
 }
 
 void Swap(GSDesc** Stations)                             //Поменять местами 2 элемента
