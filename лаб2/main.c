@@ -29,8 +29,8 @@ GSDesc* SortByRating(GSDesc*);                  //Сортировка по убыванию рейтинг
 void Swap(GSDesc**);                            //Поменять местами 2 элемента
 void GetItem(GSDesc*);                          //Вывод АЗС по заданным параметрам
 
-GSDesc* PushBack(GSDesc*);                      //Добавление в конец
-GSDesc* PushForward(GSDesc*);                   //Добавление в начало
+GSDesc* PushBack(GSDesc*, GSDesc*);             //Добавление в конец
+GSDesc* PushForward(GSDesc*, GSDesc*);          //Добавление в начало
 GSDesc* PushAnyPlace(GSDesc*);                  //Добавление в любое место
 GSDesc* InputStations();                        //Ввод данных об АЗС
 GSDesc* Process(GSDesc*);                       //Обработка данных
@@ -191,6 +191,7 @@ void OutputMenu(GSDesc* first)
 GSDesc* InputMenu(GSDesc* Stations)                       //Меню выбора ввода
 {
     system("cls");
+    GSDesc* NewStations = NULL;
     int item;
     do
     {
@@ -207,8 +208,9 @@ GSDesc* InputMenu(GSDesc* Stations)                       //Меню выбора ввода
             if(item < 0 || item > 5) puts("Данного пункта меню не существует");
         } while(item < 0 || item > 5);
         fflush(stdin);
-        if(item == 1) Stations = PushForward(Stations);
-        else if(item == 2) Stations = PushBack(Stations);
+        if(item < 3) NewStations = InputStations();
+        if(item == 1) Stations = PushForward(NewStations, Stations);
+        else if(item == 2) Stations = PushBack(NewStations, Stations);
         else if(item == 3) Stations = PushAnyPlace(Stations);
         else if(item == 4)
         {
@@ -425,26 +427,22 @@ GSDesc* Process(GSDesc* Stations)                     //Обработка данных
     return result;
 }
 
-GSDesc* PushForward(GSDesc* Stations)                     //Добавление в начало
+GSDesc* PushForward(GSDesc* NewStations, GSDesc* Stations)                     //Добавление в начало
 {
-    GSDesc* temp = NULL;
     GSDesc* connector = NULL;
-    temp = InputStations();
-    for(connector = temp ; connector->next != NULL ; connector = connector->next);
+    for(connector = NewStations ; connector->next != NULL ; connector = connector->next);
     connector->next = Stations;
-    return temp;
+    return NewStations;
 }
 
-GSDesc* PushBack(GSDesc* Stations)                    //Добавление в конец
+GSDesc* PushBack(GSDesc* NewStations, GSDesc* Stations)                    //Добавление в конец
 {
-    GSDesc* temp = NULL;
     GSDesc* connector = NULL;
-    temp = InputStations();
-    connector = temp;
+    connector = NewStations;
     if(Stations != NULL)
     {
         for(connector = Stations ; connector->next != NULL ; connector = connector->next);
-        connector->next = temp;
+        connector->next = NewStations;
         connector = Stations;
     }
     return connector;
@@ -453,7 +451,7 @@ GSDesc* PushBack(GSDesc* Stations)                    //Добавление в конец
 GSDesc* PushAnyPlace(GSDesc* Stations)                  //Добавление в любое место
 {
     system("cls");
-    GSDesc* temp = NULL;
+    GSDesc* NewStations = NULL;
     GSDesc* connector = NULL;
     GSDesc* buff = NULL;
     GSDesc* buff2 = NULL;
@@ -467,32 +465,19 @@ GSDesc* PushAnyPlace(GSDesc* Stations)                  //Добавление в любое мес
         scanf("%d", &ans);
         if(ans < 1 || ans > len+1) printf("Введите от 1 до %d\n", len+1);
     } while(ans < 1 || ans > len+1);
-    temp = InputStations();
+    NewStations = InputStations();
     if(ans == 1)
-    {
-        for(connector = temp ; connector->next != NULL ; connector = connector->next);
-        connector->next = Stations;
-        Stations = temp;
-    }
+        Stations = PushForward(NewStations, Stations);
     else if(ans == len+1)
-    {
-        if(Stations != NULL)
-        {
-            for(connector = Stations ; connector->next != NULL ; connector = connector->next);
-            connector->next = temp;
-            connector = Stations;
-        }
-        else
-            Stations = temp;
-    }
+        Stations = PushBack(NewStations, Stations);
     else
     {
         buff = Stations;
         for(i = 1; i < ans-1; i++)
             buff = buff->next;
         buff2 = buff->next;
-        for(connector = temp ; connector->next != NULL ; connector = connector->next);
-        buff->next = temp;
+        for(connector = NewStations ; connector->next != NULL ; connector = connector->next);
+        buff->next = NewStations;
         connector->next = buff2;
     }
     return Stations;
