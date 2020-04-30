@@ -5,7 +5,6 @@
 #include <string.h>
 
 #define MAXLEN 80
-#define DBG puts("DBG");
 
 typedef struct Gaslist
 {
@@ -18,10 +17,10 @@ typedef struct Gaslist
 
 /*----------------------------ФУНКЦИИ------------------------------*/
 int Menu();                                     //Меню
-int ListActions();                              //Действия со списком
 void OutputMenu(GSDesc*);                       //Меню вывода
 GSDesc* InputMenu(GSDesc*);                     //Меню выбора ввода
 void Help();                                    //Справка
+int ListActions();                              //Действия со списком
 
 int ListLen(GSDesc*);                           //Длина списка
 GSDesc* DeleteItem(GSDesc*);                    //Удаление элемента из списка
@@ -283,8 +282,7 @@ GSDesc* SortByRating(GSDesc* Stations)                  //Сортировка по рейтингу
     GSDesc* result = NULL;
     GSDesc* temp = NULL;
     GSDesc* buff = NULL;
-    int num,
-        i;
+    int num;
     for(num = 10; ListLen(result) != ListLen(Stations) ; num--)
     {
         for(temp = Stations ; temp != NULL ; temp = temp->next)
@@ -417,7 +415,6 @@ GSDesc* Process(GSDesc* Stations)                     //Обработка данных
                 buff = buff->next;
                 CopyStruct(buff, Stations);
             }
-            //buff->next = NULL;
         }
         Stations = Stations->next;
     } while(Stations != NULL);
@@ -493,8 +490,7 @@ void Swap(GSDesc** Stations)                             //Поменять местами 2 эл
     int first,
         second,
         temp,
-        i,
-        j;
+        i;
     printf("Введите 2 номера элементов, которые хотите поменять местами(всего %d элементов): ", ListLen(*Stations));
     do
     {
@@ -659,17 +655,17 @@ void OutputGasStationsText(GSDesc* first)
     system("pause");
 }
 //------------------------------------------------------ПАМЯТЬ------------------------------------------------------
-int PrepareStruct(GSDesc* first)
+int PrepareStruct(GSDesc* Station)
 {
     int res = 0,
         i;
-    if(first != NULL)
+    if(Station != NULL)
     {
-        first->name = (char*)malloc((MAXLEN+1)*sizeof(char));
-        first->address = (char*)malloc((MAXLEN+1)*sizeof(char));
-        for(i = 0; i < 4; i++) first->fuelPrices[i] = 0;
-        first->rating = 0;
-        first->next = NULL;
+        Station->name = (char*)malloc((MAXLEN+1)*sizeof(char));
+        Station->address = (char*)malloc((MAXLEN+1)*sizeof(char));
+        for(i = 0; i < 4; i++) Station->fuelPrices[i] = 0;
+        Station->rating = 0;
+        Station->next = NULL;
         res++;
     }
     return res;

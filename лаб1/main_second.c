@@ -199,14 +199,11 @@ GSDesc* Process(GSDesc* GasStations, int lines, int* rlines)
             result = (GSDesc*)realloc(result, (j+1)*sizeof(GSDesc));
             if(PrepareStruct(result+j))
             {
-                //printf("%p %p\n%p %p\nBLA BLA\n", result[j].name, GasStations[i].name, result[j].address, GasStations[i].address);
                 strcpy(result[j].name, GasStations[i].name);
                 strcpy(result[j].address, GasStations[i].address);
                 for(k = 0; k < 4; k++)
                     result[j].fuelPrices[k] = GasStations[i].fuelPrices[k];
                 *(result[j].rating) = *(GasStations[i].rating);
-                //result[j] = GasStations[i];
-                //printf("%p %p\n%p %p\n", result[j].name, GasStations[i].name, result[j].address, GasStations[i].address);
                 j++;
             }
         }
@@ -253,7 +250,7 @@ int Menu()
 
 void OutputMenu(GSDesc* GasStations, int lines)
 {
-    int item;
+    int selected;
     do
     {
         system("cls");
@@ -263,13 +260,13 @@ void OutputMenu(GSDesc* GasStations, int lines)
         puts("0 - Назад");
         do
         {
-            scanf("%d", &item);
-            if(item < 0 || item > 2) puts("Данного пункта меню не существует");
-        } while(item < 0 || item > 2);
+            scanf("%d", &selected);
+            if(selected < 0 || selected > 2) puts("Данного пункта меню не существует");
+        } while(selected < 0 || selected > 2);
         fflush(stdin);
-        if(item == 1) OutputGasStationsTable(GasStations, lines);
-        else if(item == 2) OutputGasStationsText(GasStations, lines);
-    }while(item);
+        if(selected == 1) OutputGasStationsTable(GasStations, lines);
+        else if(selected == 2) OutputGasStationsText(GasStations, lines);
+    }while(selected);
 }
 
 void Info()
