@@ -5,7 +5,6 @@
 #include <string.h>
 
 #define MAXLEN 80
-#define DBG puts("DBG");
 
 typedef struct Gaslist
 {
@@ -14,7 +13,6 @@ typedef struct Gaslist
     float fuelPrices[4];                        //Ниже цены на топливо(92,95,98,дизель)
     int rating;                                 //Рейтинг АЗС(1-10)
     struct Gaslist* next;                       //Ссылка на следующую структуру
-    struct Gaslist* prev;                       //Ссылка на предыдущую структуру
 } GSDesc;
 
 /*----------------------------ФУНКЦИИ------------------------------*/
@@ -39,8 +37,6 @@ void CopyStruct(GSDesc*, GSDesc*);              //Копирование структуры
 
 void OutputGasStationsTable(GSDesc*);           //Вывод информации в виде таблицы
 void OutputGasStationsText(GSDesc*);            //Вывод информации в виде текста
-void OutputGasStationsTableReverse(GSDesc*);    //Вывод информации в виде таблицы с конца
-void OutputGasStationsTextReverse(GSDesc*);     //Вывод информации в виде текста с конца
 
 void free_station(GSDesc*);                     //Освобождение памяти одной АЗС
 void free_list(GSDesc*);                        //Освобождение памяти списка АЗС
@@ -49,7 +45,7 @@ int main()
 {
     setlocale(LC_ALL, "russian");
     GSDesc*    First = NULL;                    //Начало списка
-    int MenuItem, len;
+    int MenuItem;
     do
     {
         MenuItem = MainMenu();
@@ -213,19 +209,15 @@ void OutputMenu(GSDesc* first)
         puts("****************Вывод****************");
         puts("1 - В виде таблицы");
         puts("2 - В виде текста");
-        puts("3 - В виде таблицы, начиная с конца");
-        puts("4 - В виде текста, начиная с конца");
         puts("0 - Назад");
         do
         {
             scanf("%d", &item);
-            if(item < 0 || item > 4) puts("Данного пункта меню не существует");
-        } while(item < 0 || item > 4);
+            if(item < 0 || item > 2) puts("Данного пункта меню не существует");
+        } while(item < 0 || item > 2);
         fflush(stdin);
         if(item == 1) OutputGasStationsTable(first);
         else if(item == 2) OutputGasStationsText(first);
-        else if(item == 3) OutputGasStationsTableReverse(first);
-        else if(item == 4) OutputGasStationsTextReverse(first);
     }while(item);
 }
 
@@ -289,7 +281,6 @@ GSDesc* DeleteItem_Queue(GSDesc* First)
     GSDesc* buff = NULL;
     buff = First;
     First = First->next;
-    if(First) First->prev = NULL;
     free_station(buff);
     return First;
 }
@@ -297,15 +288,9 @@ GSDesc* DeleteItem_Queue(GSDesc* First)
 void GetItem_Stack(GSDesc* Stations)
 {
     system("cls");
-    GSDesc* item = NULL;
     GSDesc* last = NULL;
     for(last = Stations; last->next != NULL; last = last->next);
-    item = (GSDesc*)malloc(sizeof(GSDesc));
-    CopyStruct(item, last);
-    item->prev = NULL;
-    item->next = NULL;
-    OutputItem(item);
-    free_station(item);
+    OutputItem(last);
 }
 
 void GetItem_Queue(GSDesc* first)
@@ -314,7 +299,6 @@ void GetItem_Queue(GSDesc* first)
     GSDesc* item = NULL;
     item = (GSDesc*)malloc(sizeof(GSDesc));
     CopyStruct(item, first);
-    item->prev = NULL;
     item->next = NULL;
     OutputItem(item);
     free_station(item);
@@ -324,9 +308,7 @@ GSDesc* Push_Queue(GSDesc* OtherStations)                     //Добавление в нач
 {
     GSDesc* Station = NULL;
     Station = InputStation();
-    Station->prev = NULL;
     Station->next = OtherStations;
-    if(OtherStations) OtherStations->prev = Station;
     return Station;
 }
 
@@ -335,11 +317,9 @@ GSDesc* Push_Stack(GSDesc* OtherStations)                    //Добавление в коне
     GSDesc* Station = NULL;
     GSDesc* connector = NULL;
     Station = InputStation();
-    Station->prev = NULL;
     if(OtherStations)
     {
         for(connector = OtherStations; connector->next != NULL ; connector = connector->next);
-        Station->prev = connector;
         connector->next = Station;
     }
     else
@@ -450,46 +430,6 @@ void OutputGasStationsText(GSDesc* first)
     }
     system("pause");
 }
-
-void OutputGasStationsTableReverse(GSDesc* first)
-{
-    fflush(stdout);
-    system("cls");
-    int namelen,
-        addresslen;
-    GSDesc* buff = first;
-    namelen = 8, addresslen = 5;
-    for(; buff != NULL; buff = buff->next)
-    {
-        if(strlen(buff->name) > namelen) namelen = strlen(buff->name);
-        if(strlen(buff->address) > addresslen) addresslen = strlen(buff->address);
-    }
-    printf("|%*s|%*s|Цена 92 бензина|Цена 95 бензина|Цена 98 бензина|Цена дизеля|Рейтинг|\n", namelen, "Название", addresslen, "Адрес");
-	for(buff = first; buff->next != NULL; buff = buff->next);
-	for(; buff != NULL; buff = buff->prev)
-		printf("|%*s|%*s|%15.2f|%15.2f|%15.2f|%11.2f|%7d|\n", namelen, buff->name, addresslen, buff->address,
-         buff->fuelPrices[0], buff->fuelPrices[1], buff->fuelPrices[2], buff->fuelPrices[3], buff->rating);
-    system("pause");
-}
-
-void OutputGasStationsTextReverse(GSDesc* first)
-{
-    fflush(stdout);
-    system("cls");
-    GSDesc* buff = first;
-    int i;
-    for(; buff->next != NULL; buff = buff->next);
-    for(; buff != NULL; buff=buff->prev)
-    {
-        printf("Название: %s", buff->name);
-        printf("\nАдрес: %s", buff->address);
-        printf("\nЦены(92,95,98,Дизель): ");
-        for(i = 0; i < 4; i++) printf("%.2f ", buff->fuelPrices[i]);
-        printf("\nРейтинг: %d", buff->rating);
-        printf("\n\n");
-    }
-    system("pause");
-}
 //------------------------------------------------------ПАМЯТЬ------------------------------------------------------
 int PrepareStruct(GSDesc* Station)
 {
@@ -502,7 +442,6 @@ int PrepareStruct(GSDesc* Station)
         for(i = 0; i < 4; i++) Station->fuelPrices[i] = 0;
         Station->rating = 0;
         Station->next = NULL;
-        //Station->prev = NULL;
         res++;
     }
     return res;
@@ -517,7 +456,6 @@ void free_station(GSDesc* Station)
         free(Station->address);
         Station->address = NULL;
         Station->next = NULL;
-        Station->prev = NULL;
         free(Station);
         Station = NULL;
     }

@@ -103,7 +103,11 @@ int main()
                 }
                 break;
             case 5:
-                if(First != NULL) GResult = Process(First);
+                if(First != NULL)
+                {
+                    free_list(GResult);
+                    GResult = Process(First);
+                }
                 else
                 {
                     puts("Сначала введите список АЗС!");

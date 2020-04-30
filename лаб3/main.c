@@ -438,7 +438,6 @@ GSDesc* Process(GSDesc* Stations)                     //Обработка данных
                 buff = buff->next;
                 CopyStruct(buff, Stations);
             }
-            //buff->next = NULL;
         }
         Stations = Stations->next;
     } while(Stations != NULL);
@@ -656,10 +655,8 @@ GSDesc* InputStations()
             {
                 buff->next = (GSDesc*)malloc(sizeof(GSDesc));
                 buff->next->prev = buff;
-                //printf("%p ", buff->next->prev);
                 buff = buff->next;
             }
-            //printf("%p\n", buff->prev);
         }
     }
     system("pause");
@@ -755,7 +752,6 @@ int PrepareStruct(GSDesc* Station)
         for(i = 0; i < 4; i++) Station->fuelPrices[i] = 0;
         Station->rating = 0;
         Station->next = NULL;
-        //Station->prev = NULL;
         res++;
     }
     return res;
