@@ -40,8 +40,8 @@ void CopyStruct(GSDesc*, GSDesc*);              //Копирование структуры
 void OutputGasStationsTable(GSDesc*);           //Вывод информации в виде таблицы
 void OutputGasStationsText(GSDesc*);            //Вывод информации в виде текста
 
-void free_station(GSDesc*);                     //Освобождение памяти одной АЗС
-void free_list(GSDesc*);                        //Освобождение памяти списка АЗС
+GSDesc* free_station(GSDesc*);                  //Освобождение памяти одной АЗС
+GSDesc* free_list(GSDesc*);                     //Освобождение памяти списка АЗС
 /*-----------------------------------------------------------------*/
 int main()
 {
@@ -105,7 +105,7 @@ int main()
             case 5:
                 if(First != NULL)
                 {
-                    free_list(GResult);
+                    GResult = free_list(GResult);
                     GResult = Process(First);
                 }
                 else
@@ -124,8 +124,8 @@ int main()
                 break;
         }
     } while(MenuItem);
-    free_list(First);
-    free_list(GResult);
+    First = free_list(First);
+    GResult = free_list(GResult);
     return 0;
 }
 //------------------------------------------------------МЕНЮ------------------------------------------------------
@@ -217,7 +217,7 @@ GSDesc* InputMenu(GSDesc* Stations)                       //Меню выбора ввода
         else if(item == 3) Stations = PushAnyPlace(Stations);
         else if(item == 4)
         {
-            free_list(Stations);
+            Stations = free_list(Stations);
             Stations = InputStations();
         }
     }while(item != 5);
@@ -263,8 +263,7 @@ GSDesc* DeleteItem(GSDesc* Stations)
     if(num == 1)
     {
         Stations = Stations->next;
-        free_station(temp);
-        temp = NULL;
+        temp = free_station(temp);
     }
     else
     {
@@ -276,7 +275,7 @@ GSDesc* DeleteItem(GSDesc* Stations)
             num--;
         }
         temp->next = toDel->next;
-        free_station(toDel);
+        toDel = free_station(toDel);
     }
     return Stations;
 }
@@ -310,7 +309,7 @@ GSDesc* SortByRating(GSDesc* Stations)                  //Сортировка по рейтингу
     }
     if(result == NULL) puts("Упс... Что-то пошло не так! Попробуйте еще раз!");
     else puts("Сортировка прошла успешно!");
-    free_list(Stations);
+    Stations = free_list(Stations);
     system("pause");
     return result;
 }
@@ -396,7 +395,7 @@ void GetItem(GSDesc* Stations)
         if(result != NULL) OutputMenu(result);
         else
             puts("Ничего не найдено!"), system("pause");
-    free_list(result);
+    result = free_list(result);
 }
 
 GSDesc* Process(GSDesc* Stations)                     //Обработка данных
@@ -675,7 +674,7 @@ int PrepareStruct(GSDesc* Station)
     return res;
 }
 
-void free_station(GSDesc* Station)
+GSDesc* free_station(GSDesc* Station)
 {
     if(Station != NULL)
     {
@@ -683,13 +682,13 @@ void free_station(GSDesc* Station)
         Station->name = NULL;
         free(Station->address);
         Station->address = NULL;
-        //free(Station->next); тут проблема
         Station->next = NULL;
         Station = NULL;
     }
+    return NULL;
 }
 
-void free_list(GSDesc* item)
+GSDesc* free_list(GSDesc* item)
 {
     if(item != NULL)
     {
@@ -697,9 +696,10 @@ void free_list(GSDesc* item)
         for(; item != NULL; item = buff)
         {
             buff = item->next;
-            free_station(item);
+            item = free_station(item);
         }
     }
+    return NULL;
 }
 
 void CopyStruct(GSDesc* ThisStation, GSDesc* OtherStation)

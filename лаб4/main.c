@@ -17,16 +17,13 @@ typedef struct Gaslist
 
 /*----------------------------ФУНКЦИИ------------------------------*/
 int MainMenu();                                 //Меню выбора работы(стек или очередь)
-int MenuStack();                                //Меню для стека
-int MenuQueue();                                //Меню для очереди
+int Menu();                                     //Меню действий
 void OutputMenu(GSDesc*);                       //Меню вывода
 void Help();                                    //Справка
 
-GSDesc* DeleteItem_Stack(GSDesc*);              //Удаление элемента из стека
-GSDesc* DeleteItem_Queue(GSDesc*);              //Удаление элемента из очереди
+GSDesc* DeleteItem(GSDesc*);                    //Удаление элемента из стека/очереди
 
-void GetItem_Stack(GSDesc*);                    //Вывод крайнего элемента стека
-void GetItem_Queue(GSDesc*);                    //Вывод крайнего элемента очереди
+void GetItem(GSDesc*);                          //Вывод крайнего элемента стека/очереди
 
 GSDesc* Push_Stack(GSDesc*);                    //Добавление в стек
 GSDesc* Push_Queue(GSDesc*);                    //Добавление в очередь
@@ -38,8 +35,8 @@ void CopyStruct(GSDesc*, GSDesc*);              //Копирование структуры
 void OutputGasStationsTable(GSDesc*);           //Вывод информации в виде таблицы
 void OutputGasStationsText(GSDesc*);            //Вывод информации в виде текста
 
-void free_station(GSDesc*);                     //Освобождение памяти одной АЗС
-void free_list(GSDesc*);                        //Освобождение памяти списка АЗС
+GSDesc* free_station(GSDesc*);                  //Освобождение памяти одной АЗС
+GSDesc* free_list(GSDesc*);                     //Освобождение памяти списка АЗС
 /*-----------------------------------------------------------------*/
 int main()
 {
@@ -57,14 +54,14 @@ int main()
             case 2:
                 do
                 {
-                    MenuItem = MenuStack();
+                    MenuItem = Menu();
                     switch(MenuItem)
                     {
                         case 1:
                             First = Push_Stack(First);
                             break;
                         case 2:
-                            if(First) GetItem_Stack(First);
+                            if(First) GetItem(First);
                             else
                             {
                                 puts("Вы ничего не ввели, список АЗС пуст! Выполните пункт 1");
@@ -80,7 +77,7 @@ int main()
                             }
                             break;
                         case 4:
-                            if(First) First = DeleteItem_Stack(First);
+                            if(First) First = DeleteItem(First);
                             else
                             {
                                 puts("Вы ничего не ввели, список АЗС пуст! Выполните пункт 1");
@@ -95,14 +92,14 @@ int main()
             case 3:
                 do
                 {
-                    MenuItem = MenuQueue();
+                    MenuItem = Menu();
                     switch(MenuItem)
                     {
                         case 1:
                             First = Push_Queue(First);
                             break;
                         case 2:
-                            if(First) GetItem_Queue(First);
+                            if(First) GetItem(First);
                             else
                             {
                                 puts("Вы ничего не ввели, список АЗС пуст! Выполните пункт 1");
@@ -118,7 +115,7 @@ int main()
                             }
                             break;
                         case 4:
-                            if(First) First = DeleteItem_Queue(First);
+                            if(First) First = DeleteItem(First);
                             else
                             {
                                 puts("Вы ничего не ввели, список АЗС пуст! Выполните пункт 1");
@@ -131,13 +128,13 @@ int main()
                 if(MenuItem == 6) MenuItem = 0;
                 break;
             case 4:
-                free_list(First);
+                First = free_list(First);
                 puts("Данные очищены!");
                 system("pause");
                 break;
         }
     } while(MenuItem);
-    free_list(First);
+    First = free_list(First);
     return 0;
 }
 //------------------------------------------------------МЕНЮ------------------------------------------------------
@@ -160,35 +157,15 @@ int MainMenu()
     return selected;
 }
 
-int MenuStack()
+int Menu()
 {
     system("cls");
     int selected;
-    puts("****************МЕНЮ(СТЕК)****************");
+    puts("****************МЕНЮ****************");
     puts("1 - Добавление АЗС к имеющемуся списку");
-    puts("2 - Вывести последний элемент списка");
+    puts("2 - Вывести элемент");
     puts("3 - Вывод полного списка АЗС");
-    puts("4 - Удалить последний элемент списка");
-    puts("5 - Назад к выбору режима работы");
-    puts("6 - Завершить работу программы");
-    do
-    {
-        scanf("%d", &selected);
-        if(selected < 0 || selected > 6) puts("Данного пункта меню не существует");
-    } while(selected < 0 || selected > 6);
-    fflush(stdin);
-    return selected;
-}
-
-int MenuQueue()
-{
-    system("cls");
-    int selected;
-    puts("****************МЕНЮ(ОЧЕРЕДЬ)****************");
-    puts("1 - Добавление АЗС к имеющемуся списку");
-    puts("2 - Вывести первый элемент списка");
-    puts("3 - Вывод полного списка АЗС");
-    puts("4 - Удалить первый элемент списка");
+    puts("4 - Удалить элемент списка");
     puts("5 - Назад к выбору режима работы");
     puts("6 - Завершить работу программы");
     do
@@ -256,44 +233,17 @@ void Help()
     system("pause");
 }
 //------------------------------------------------------ДЕЙСТВИЯ СО СПИСКОМ------------------------------------------------------
-GSDesc* DeleteItem_Stack(GSDesc* First)
-{
-    system("cls");
-    GSDesc* buff = NULL;
-    GSDesc* temp = NULL;
-    for(buff = First; buff->next != NULL; buff = buff->next);
-    if(First->next != buff && First->next != NULL)
-    {
-        for(temp = First; temp->next != buff; temp = temp->next);
-        temp->next = NULL;
-    }
-    else if(First == buff)
-        First = First->next;
-    else if(First->next == buff)
-        First->next = NULL;
-    free_station(buff);
-    return First;
-}
-
-GSDesc* DeleteItem_Queue(GSDesc* First)
+GSDesc* DeleteItem(GSDesc* First)
 {
     system("cls");
     GSDesc* buff = NULL;
     buff = First;
     First = First->next;
-    free_station(buff);
+    buff = free_station(buff);
     return First;
 }
 
-void GetItem_Stack(GSDesc* Stations)
-{
-    system("cls");
-    GSDesc* last = NULL;
-    for(last = Stations; last->next != NULL; last = last->next);
-    OutputItem(last);
-}
-
-void GetItem_Queue(GSDesc* first)
+void GetItem(GSDesc* first)
 {
     system("cls");
     GSDesc* item = NULL;
@@ -301,10 +251,10 @@ void GetItem_Queue(GSDesc* first)
     CopyStruct(item, first);
     item->next = NULL;
     OutputItem(item);
-    free_station(item);
+    item = free_station(item);
 }
 
-GSDesc* Push_Queue(GSDesc* OtherStations)                     //Добавление в начало
+GSDesc* Push_Stack(GSDesc* OtherStations)                     //Добавление в начало
 {
     GSDesc* Station = NULL;
     Station = InputStation();
@@ -312,7 +262,7 @@ GSDesc* Push_Queue(GSDesc* OtherStations)                     //Добавление в нач
     return Station;
 }
 
-GSDesc* Push_Stack(GSDesc* OtherStations)                    //Добавление в конец
+GSDesc* Push_Queue(GSDesc* OtherStations)                    //Добавление в конец
 {
     GSDesc* Station = NULL;
     GSDesc* connector = NULL;
@@ -447,7 +397,7 @@ int PrepareStruct(GSDesc* Station)
     return res;
 }
 
-void free_station(GSDesc* Station)
+GSDesc* free_station(GSDesc* Station)
 {
     if(Station != NULL)
     {
@@ -459,9 +409,10 @@ void free_station(GSDesc* Station)
         free(Station);
         Station = NULL;
     }
+    return NULL;
 }
 
-void free_list(GSDesc* item)
+GSDesc* free_list(GSDesc* item)
 {
     if(item != NULL)
     {
@@ -469,9 +420,10 @@ void free_list(GSDesc* item)
         for(; item != NULL; item = buff)
         {
             buff = item->next;
-            free_station(item);
+            item = free_station(item);
         }
     }
+    return NULL;
 }
 
 void CopyStruct(GSDesc* ThisStation, GSDesc* OtherStation)

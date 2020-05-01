@@ -23,7 +23,7 @@ GSDesc* InputInfo(int*);                        //Ввод элементов
 void InputText(char*);                          //Ввод строки
 GSDesc* Process(GSDesc*, int, int*);            //Обработка данных
 int PrepareStruct(GSDesc*);                     //Выделение памяти для полей структуры
-void free_struct(GSDesc*, int);                 //Освобождение памяти
+GSDesc* free_struct(GSDesc*, int);                 //Освобождение памяти
 /*-----------------------------------------------------------------*/
 int main()
 {
@@ -42,7 +42,7 @@ int main()
                 Info();
                 break;
             case 2:
-                free_struct(GasStations, i);
+                GasStations = free_struct(GasStations, i);
                 GasStations = InputInfo(&i);
                 break;
             case 3:
@@ -56,7 +56,7 @@ int main()
             case 4:
                 if(GasStations != NULL)
                 {
-                    free_struct(GSResult, ri);
+                    GSResult = free_struct(GSResult, ri);
                     ri = 0;
                     GSResult = Process(GasStations, i, &ri);
                 }
@@ -72,8 +72,8 @@ int main()
                 break;
         }
     } while(MenuItem);
-    free_struct(GasStations, i);
-    free_struct(GSResult, ri);
+    GasStations = free_struct(GasStations, i);
+    GSResult = free_struct(GSResult, ri);
     return 0;
 }
 
@@ -281,7 +281,7 @@ void Info()
     system("pause");
 }
 
-void free_struct(GSDesc* Stations, int lines)
+GSDesc* free_struct(GSDesc* Stations, int lines)
 {
     if(Stations != NULL)
     {
@@ -300,4 +300,5 @@ void free_struct(GSDesc* Stations, int lines)
         }
         Stations = NULL;
     }
+    return NULL;
 }
