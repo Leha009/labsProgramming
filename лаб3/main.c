@@ -5,7 +5,6 @@
 #include <string.h>
 
 #define MAXLEN 80
-#define DBG puts("DBG");
 
 typedef struct Gaslist
 {

@@ -19,6 +19,7 @@ typedef struct Gaslist
 int MainMenu();                                 //Меню выбора работы(стек или очередь)
 int Menu();                                     //Меню действий
 void OutputMenu(GSDesc*);                       //Меню вывода
+void OutputItem(GSDesc*);
 void Help();                                    //Справка
 
 GSDesc* DeleteItem(GSDesc*);                    //Удаление элемента из стека/очереди
@@ -28,6 +29,7 @@ void GetItem(GSDesc*);                          //Вывод крайнего элемента стека/
 GSDesc* Push_Stack(GSDesc*);                    //Добавление в стек
 GSDesc* Push_Queue(GSDesc*);                    //Добавление в очередь
 GSDesc* InputStation();                         //Ввод данных об АЗС
+void InputText(char*);
 
 int PrepareStruct(GSDesc*);                     //Выделение памяти для полей структуры
 void CopyStruct(GSDesc*, GSDesc*);              //Копирование структуры
