@@ -44,10 +44,6 @@ void OutputGasStationsText(GSDesc*);            //Вывод информации в виде текста
 void OutputGasStationsTableReverse(GSDesc*);    //Вывод информации в виде таблицы с конца
 void OutputGasStationsTextReverse(GSDesc*);     //Вывод информации в виде текста с конца
 
-GSDesc* InputTextFile(GSDesc*);                 //Ввод текста с файла
-GSDesc* fillStruct(char* string);               //Заполняем структуры из данных файла
-void OutputFile(GSDesc*);                       //Вывод в файл
-
 GSDesc* free_station(GSDesc*);                  //Освобождение памяти одной АЗС
 GSDesc* free_list(GSDesc*);                     //Освобождение памяти списка АЗС
 /*-----------------------------------------------------------------*/
@@ -189,19 +185,17 @@ void OutputMenu(GSDesc* first)
         puts("2 - В виде текста");
         puts("3 - В виде таблицы, начиная с конца");
         puts("4 - В виде текста, начиная с конца");
-        puts("5 - В файл");
         puts("0 - Назад");
         do
         {
             scanf("%d", &item);
-            if(item < 0 || item > 5) puts("Данного пункта меню не существует");
-        } while(item < 0 || item > 5);
+            if(item < 0 || item > 4) puts("Данного пункта меню не существует");
+        } while(item < 0 || item > 4);
         fflush(stdin);
         if(item == 1) OutputGasStationsTable(first);
         else if(item == 2) OutputGasStationsText(first);
         else if(item == 3) OutputGasStationsTableReverse(first);
         else if(item == 4) OutputGasStationsTextReverse(first);
-        else if(item == 5) OutputFile(first);
     }while(item);
 }
 
@@ -218,13 +212,12 @@ GSDesc* InputMenu(GSDesc* Stations)                       //Меню выбора ввода
         puts("2 - Добавить в конец");
         puts("3 - Добавить на определенное место");
         puts("4 - Ввести полностью заново");
-        puts("5 - Получить данные из файла");
-        puts("6 - Назад");
+        puts("5 - Назад");
         do
         {
             scanf("%d", &item);
-            if(item < 0 || item > 6) puts("Данного пункта меню не существует");
-        } while(item < 0 || item > 6);
+            if(item < 0 || item > 5) puts("Данного пункта меню не существует");
+        } while(item < 0 || item > 5);
         fflush(stdin);
         if(item < 3) NewStations = InputStations();
         if(item == 1) Stations = PushForward(NewStations, Stations);
@@ -235,12 +228,7 @@ GSDesc* InputMenu(GSDesc* Stations)                       //Меню выбора ввода
             Stations = free_list(Stations);
             Stations = InputStations();
         }
-        else if(item == 5)
-        {
-            Stations = free_list(Stations);
-            Stations = InputTextFile(Stations);
-        }
-    }while(item != 6);
+    }while(item != 5);
     return Stations;
 }
 
@@ -544,7 +532,7 @@ void Swap(GSDesc** Stations)                             //Поменять местами 2 эл
         {
             temp = second;
             second = first;
-            first = temp;
+            first = second;
         }
         for(i = 1, gFirst = *Stations; i < first; i++, gFirst = gFirst->next);
         for(i = 1, gSecond = *Stations; i < second; i++, gSecond = gSecond->next);
@@ -557,7 +545,7 @@ void Swap(GSDesc** Stations)                             //Поменять местами 2 эл
             gFirst->next = buff2;
             gSecond->next = buff;
             gFirst->prev = gSecond->prev;
-            if(gFirst->next) gFirst->next->prev = gFirst;
+            gFirst->next->prev = gFirst;
             gSecond->next->prev = gSecond;
             gSecond->prev = NULL;
             *Stations = gSecond;
@@ -673,149 +661,6 @@ GSDesc* InputStations()
     system("pause");
     return first;
 }
-
-GSDesc* InputTextFile(GSDesc* First)
-{
-    system("cls");
-    GSDesc* newFirst = NULL;
-    GSDesc* buff = NULL;
-    char *text = NULL,
-         *string = NULL;
-    FILE *file = NULL;
-    char filename[128];
-    int ans,
-        i,
-        f,
-        size,
-        frows,
-        strsize,
-        linebeg;    //индекс начала очередной строки
-    puts("Хотите указать свое имя файла? Введите любое число, отличное от нуля\nИначе будет использован файл in.txt");
-    scanf("%d", &ans);
-    fflush(stdin);
-    if(ans)
-    {
-        puts("\nВведите имя файла для чтения. Имя файла не должно превышать 128 символов!");
-        gets(filename);
-        fflush(stdin);
-        file = fopen(filename, "r");
-    }
-    else file = fopen("in.txt", "r");
-    if(file != NULL)
-    {
-        fflush(file);
-        fseek(file, 0, SEEK_SET);
-        fseek(file,0,SEEK_END);
-        size = ftell(file);
-        rewind(file);
-        if(size == 0)
-            puts("Файл пуст!");
-        text = (char*)malloc(size*sizeof(char));
-        if(text != NULL && size)
-        {
-            fread(text, size, 1, file);
-            if(fclose(file) == EOF) puts("Error closing!");
-            frows = 0; f = 0;
-            for(i = 0; i < size+1 && !f; i++)
-            {
-                if(text[i] <= 0) f = 1, text[i] = '\0';
-                if(text[i] == '\n' || text[i] == '\0')
-                    frows++;
-            }
-            if(frows > 0)
-            {
-                linebeg = 0;
-                do
-                {
-                    strsize = 0;
-                    while(text[linebeg+strsize] != '\n' && text[linebeg+strsize] != '\0') strsize++;
-                    //printf("%d", strsize);
-                    string = (char*)malloc((strsize+1)*sizeof(char));
-                    for(i = 0; i < strsize; i++)
-                        string[i] = text[linebeg+i];
-                    string[i] = '\0';
-                    if(newFirst)
-                    {
-                        buff->next = fillStruct(string);
-                        buff = buff->next;
-                    }
-                    else
-                    {
-                        newFirst = fillStruct(string);
-                        buff = newFirst;
-                    }
-                    frows--;
-                    while(text[linebeg] != '\n' && text[linebeg] != '\0') linebeg++;
-                    linebeg++;
-                    free(string);
-                } while(frows != 0);
-                puts("Список заполнен!");
-            }
-            else
-                puts("Все строки пустые!");
-        }
-        free(text);
-        text = NULL;
-    }
-    else puts("Не удалось открыть файл с таким именем!");
-    system("pause");
-    return newFirst;
-}
-
-GSDesc* fillStruct(char* string)
-{
-    GSDesc* result = NULL;
-    int i,
-        len,
-        j,
-        index,
-        buffi;
-    char empty[] = "Unknown";
-    char** buff = NULL;
-    len = strlen(string);
-    //printf("DBG: %s\n%d\n", string,len);
-    index = 0; buffi = 0;
-    buff = (char**)malloc(7*sizeof(char*));
-    do
-    {
-        i = 0;
-        while(string[i+index] != ';' && string[i+index] != '\0') i++;
-        //printf("%d | %d\n", index, i);
-        buff[buffi] = (char*)malloc((i+1)*sizeof(char));
-        for(j = 0; j < i; j++)
-            buff[buffi][j] = string[index+j];
-        buff[buffi][j] = '\0';
-        buffi++;
-        index += i+1;
-    } while(index < len);
-    result = (GSDesc*)malloc(sizeof(GSDesc));
-    if(PrepareStruct(result))
-    {
-        if(buffi != 0)
-            strcpy(result->name, buff[0]);
-        else
-            strcpy(result->name, empty);
-        if(buffi > 1 && strlen(buff[1]) > 0)
-            strcpy(result->address, buff[1]);
-        else
-            strcpy(result->address, empty);
-        for(i = 0; i < 4; i++)
-        {
-            if(buffi > 2+i)
-                result->fuelPrices[i] = atof(buff[2+i]);
-            else
-                result->fuelPrices[i] = 0.0;
-        }
-        if(buffi > 6)
-            result->rating = atoi(buff[6]);
-        else
-            result->rating = 0;
-    }
-    for(i = 0; i < 7; i++)
-        free(buff[i]);
-    free(buff);
-    return result;
-}
 //------------------------------------------------------ВЫВОД------------------------------------------------------
 void OutputGasStationsTable(GSDesc* first)
 {
@@ -892,41 +737,6 @@ void OutputGasStationsTextReverse(GSDesc* first)
         printf("\nРейтинг: %d", buff->rating);
         printf("\n\n");
     }
-    system("pause");
-}
-
-void OutputFile(GSDesc* first)
-{
-    system("cls");
-    FILE *file = NULL;
-    GSDesc* buff = first;
-    char filename[128];
-    int ans,
-        i,
-        namelen,
-        addresslen;
-    ans = 0;
-    puts("Хотите указать имя файла самостоятельно? Введите любое число, отличное от нуля.\nВ противном случае все сохранится в out.txt");
-    scanf("%d", &ans);
-    fflush(stdin);
-    if(ans)
-    {
-        puts("Введите имя файла для сохранения");
-        gets(filename);
-        file = fopen(filename, "w");
-    }
-    else file = fopen("out.txt", "w");
-    namelen = 8, addresslen = 5;
-    for(; buff != NULL; buff = buff->next)
-    {
-        if(strlen(buff->name) > namelen) namelen = strlen(buff->name);
-        if(strlen(buff->address) > addresslen) addresslen = strlen(buff->address);
-    }
-    fprintf(file, "|%*s|%*s|Цена 92 бензина|Цена 95 бензина|Цена 98 бензина|Цена дизеля|Рейтинг|\n", namelen, "Название", addresslen, "Адрес");
-	for(buff = first; buff != NULL; buff = buff->next)
-		fprintf(file, "|%*s|%*s|%15.2f|%15.2f|%15.2f|%11.2f|%7d|\n", namelen, buff->name, addresslen, buff->address,
-         buff->fuelPrices[0], buff->fuelPrices[1], buff->fuelPrices[2], buff->fuelPrices[3], buff->rating);
-    fclose(file);
     system("pause");
 }
 //------------------------------------------------------ПАМЯТЬ------------------------------------------------------
