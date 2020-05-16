@@ -544,7 +544,7 @@ void Swap(GSDesc** Stations)                             //Поменять местами 2 эл
             gFirst->next = buff2;
             gSecond->next = buff;
             gFirst->prev = gSecond->prev;
-            gFirst->next->prev = gFirst;
+            if(gFirst->next) gFirst->next->prev = gFirst;
             gSecond->next->prev = gSecond;
             gSecond->prev = NULL;
             *Stations = gSecond;
