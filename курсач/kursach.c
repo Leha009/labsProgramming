@@ -26,7 +26,7 @@ void Help();                                    //Справка
 
 int ListLen(GSDesc*);                           //Длина списка
 GSDesc* DeleteItem(GSDesc*);                    //Удаление элемента из списка
-GSDesc* SortByRating(GSDesc*);                  //Сортировка по убыванию рейтинга
+GSDesc* Sort(GSDesc*);                          //Сортировка по полю
 void Swap(GSDesc**);                            //Поменять местами 2 элемента
 void GetItem(GSDesc*);                          //Вывод АЗС по заданным параметрам
 
@@ -96,7 +96,7 @@ int main()
                                 Swap(&First);
                                 break;
                             case 4:
-                                First = SortByRating(First);
+                                First = Sort(First);
                                 break;
                             case 5:
                                 GetItem(First);
@@ -302,32 +302,163 @@ GSDesc* DeleteItem(GSDesc* Stations)
     return Stations;
 }
 
-GSDesc* SortByRating(GSDesc* Stations)                  //Сортировка по рейтингу по убыванию
+GSDesc* Sort(GSDesc* Stations)                  //Сортировка
 {
+    system("cls");
     GSDesc* result = NULL;
     GSDesc* temp = NULL;
     GSDesc* buff = NULL;
+    GSDesc* buffThis = NULL;
     int num,
-        i;
-    for(num = 10; ListLen(result) != ListLen(Stations) ; num--)
+        i,
+        field,
+        mode;
+    float buffF;
+    puts("Выберете поле для сортировки\n1 - цена на 92 бензин, 2 - цена на 95 бензин, 3 - цена на 98 бензин, 4 - цена на дизель, 5 - рейтинг");
+    do
     {
-        for(temp = Stations ; temp != NULL ; temp = temp->next)
+        scanf("%d", &field);
+        if(field < 1 || field > 5) puts("Такого номера поля нет!");
+    } while(field < 1 || field > 5);
+    puts("Выберете режим сортировки:\n1 - по возрастанию, 2 - по убыванию");
+    do
+    {
+        scanf("%d", &mode);
+        if(mode < 1 || mode > 2) puts("Такого номера режима нет!");
+    } while(mode < 1 || mode > 2);
+    mode--; field--;
+    if(mode)        //убывание
+    {
+        if(field == 4)
         {
-            if(temp->rating == num)
+            for(num = 10; ListLen(result) != ListLen(Stations) ; num--)
             {
-                if(result == NULL)
+                for(temp = Stations ; temp != NULL ; temp = temp->next)
                 {
-                    result = (GSDesc*)malloc(sizeof(GSDesc));
-                    buff = result;
-                    CopyStruct(result, temp);
-                    buff->prev = NULL;
+                    if(temp->rating == num)
+                    {
+                        if(result == NULL)
+                        {
+                            result = (GSDesc*)malloc(sizeof(GSDesc));
+                            buff = result;
+                            CopyStruct(result, temp);
+                            buff->prev = NULL;
+                        }
+                        else
+                        {
+                            buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                            buff->next->prev = buff;
+                            buff = buff->next;
+                            CopyStruct(buff, temp);
+                        }
+                    }
                 }
-                else
+            }
+        }
+        else
+        {
+            for(buffThis = Stations; buffThis != NULL; buffThis = buffThis->next)
+            {
+                for(temp = Stations, buffF = 0.0; temp != NULL; temp = temp->next)
                 {
-                    buff->next = (GSDesc*)malloc(sizeof(GSDesc));
-                    buff->next->prev = buff;
-                    buff = buff->next;
-                    CopyStruct(buff, temp);
+                    if(!buff)
+                    {
+                        if(temp->fuelPrices[field] > buffF)
+                            buffF = temp->fuelPrices[field];
+                    }
+                    else
+                    {
+                        if(temp->fuelPrices[field] > buffF && temp->fuelPrices[field] < buff->fuelPrices[field])
+                            buffF = temp->fuelPrices[field];
+                    }
+                }
+                for(temp = Stations ; temp != NULL ; temp = temp->next)
+                {
+                    if(temp->fuelPrices[field] == buffF)
+                    {
+                        if(result == NULL)
+                        {
+                            result = (GSDesc*)malloc(sizeof(GSDesc));
+                            buff = result;
+                            CopyStruct(result, temp);
+                            buff->prev = NULL;
+                        }
+                        else
+                        {
+                            buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                            buff->next->prev = buff;
+                            buff = buff->next;
+                            CopyStruct(buff, temp);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        if(field == 4)
+        {
+            for(num = 0; ListLen(result) != ListLen(Stations) ; num++)
+            {
+                for(temp = Stations ; temp != NULL ; temp = temp->next)
+                {
+                    if(temp->rating == num)
+                    {
+                        if(result == NULL)
+                        {
+                            result = (GSDesc*)malloc(sizeof(GSDesc));
+                            buff = result;
+                            CopyStruct(result, temp);
+                            buff->prev = NULL;
+                        }
+                        else
+                        {
+                            buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                            buff->next->prev = buff;
+                            buff = buff->next;
+                            CopyStruct(buff, temp);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            for(buffThis = Stations; buffThis != NULL; buffThis = buffThis->next)
+            {
+                for(temp = Stations, buffF = 1000000000.0; temp != NULL; temp = temp->next)
+                {
+                    if(!buff)
+                    {
+                        if(temp->fuelPrices[field] < buffF)
+                            buffF = temp->fuelPrices[field];
+                    }
+                    else
+                    {
+                        if(temp->fuelPrices[field] < buffF && temp->fuelPrices[field] > buff->fuelPrices[field])
+                            buffF = temp->fuelPrices[field];
+                    }
+                }
+                for(temp = Stations ; temp != NULL ; temp = temp->next)
+                {
+                    if(temp->fuelPrices[field] == buffF)
+                    {
+                        if(result == NULL)
+                        {
+                            result = (GSDesc*)malloc(sizeof(GSDesc));
+                            buff = result;
+                            CopyStruct(result, temp);
+                            buff->prev = NULL;
+                        }
+                        else
+                        {
+                            buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                            buff->next->prev = buff;
+                            buff = buff->next;
+                            CopyStruct(buff, temp);
+                        }
+                    }
                 }
             }
         }
