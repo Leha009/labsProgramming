@@ -26,9 +26,9 @@ void Help();                                    //Справка
 
 int ListLen(GSDesc*);                           //Длина списка
 GSDesc* DeleteItem(GSDesc*, int);               //Удаление элемента из списка
-void Sort(GSDesc**, int, int);                  //Сортировка по полю    СДЕЛАТЬ
+void Sort(GSDesc**, int, int);                  //Сортировка по полю
 void Swap(GSDesc*, int, int);                   //Поменять местами 2 элемента
-void GetItem(GSDesc*, int, char);               //Вывод АЗС по заданным параметрам  СДЕЛАТЬ
+void GetItem(GSDesc*, int);                     //Вывод АЗС по заданным параметрам
 GSDesc* ReverseList(GSDesc*);                   //Реверс списка
 
 GSDesc* PushBack(GSDesc*, GSDesc*);             //Добавление в конец
@@ -96,6 +96,7 @@ int main()
                                 system("pause");
                                 break;
                             case 2: //удалить
+                                system("cls");
                                 printf("Введите номер элемента, который хотите удалить(всего %d элементов): ", len);
                                 do
                                 {
@@ -106,6 +107,7 @@ int main()
                                 First = DeleteItem(First, index1);
                                 break;
                             case 3: //поменять местами
+                                system("cls");
                                 printf("Введите два номера элементов для перестановки(от 1 до %d): ", len);
                                 do
                                 {
@@ -116,6 +118,7 @@ int main()
                                 Swap(First, index1, index2);
                                 break;
                             case 4: //сортировка
+                                system("cls");
                                 puts("Выберете поле для сортировки:\n1 - название, 2 - адрес, 3 - цена на 92 бензин,4 - цена на 95 бензин\n5 - цена на 98 бензин, 6 - цена на дизель, 7 - рейтинг");
                                 do
                                 {
@@ -132,12 +135,20 @@ int main()
                                 Sort(&First, field, mode);
                                 break;
                             case 5: //поиск
-                                GetItem(First, 0, '0');
+                                system("cls");
+                                puts("Выберете поле для поиска:\n1 - название, 2 - адрес, 3 - цена на 92 бензин,4 - цена на 95 бензин\n5 - цена на 98 бензин, 6 - цена на дизель, 7 - рейтинг\n0 - искать везде");
+                                do
+                                {
+                                    scanf("%d", &field);
+                                    if(field < 0 || field > 7) puts("Поля с таким номером нет!");
+                                } while(field < 0 || field > 7);
+                                GetItem(First, field);
                                 break;
                             case 6: //изменение
                                 break;
                         }
-                    } while(MenuItem != 7);
+                    } while(MenuItem != 0);
+                    if(MenuItem == 0) MenuItem = 1284;
                 }
                 else
                 {
@@ -231,12 +242,12 @@ int ListActions()
     puts("4 - Сортировка элементов списка АЗС по рейтингу(по убыв.)");
     puts("5 - Поиск АЗС по определенному критерию");
     puts("6 - Изменить данные АЗС");
-    puts("7 - Назад");
+    puts("0 - Назад");
     do
     {
         scanf("%d", &selected);
-        if(selected < 0 || selected > 7) puts("Данного пункта меню не существует");
-    } while(selected < 0 || selected > 7);
+        if(selected < 0 || selected > 6) puts("Данного пункта меню не существует");
+    } while(selected < 0 || selected > 6);
     fflush(stdin);
     return selected;
 }
@@ -416,10 +427,39 @@ GSDesc* ReverseList(GSDesc* First)
     return result;
 }
 
-void GetItem(GSDesc* Stations, int field, char info)
+void GetItem(GSDesc* Stations, int field)       //Поиск: 1: адрес, 2: название, 3-6: цена на 92,95,98,дизель, 7: рейтинг, -1: все
 {
     system("cls");
     GSDesc* result = NULL;
+    GSDesc* buff = NULL;
+    GSDesc* buffThis = NULL;
+    char* string = NULL;
+    string = (char*)malloc((MAXLEN+1)*sizeof(char));
+    puts("Введите, какое значение будем искать");
+    InputText(string);
+    puts("");
+    for(buffThis = Stations; buffThis != NULL; buffThis = buffThis->next)
+    {
+        if( ((field == 0 || field == 1) && !strcmp(string,buffThis->name)) || ((field == 0 || field == 2) && !strcmp(string,buffThis->address)) || ((field == 0 || field == 3) && atof(string) == buffThis->fuelPrices[0]) || ((field == 0 || field == 4) && atof(string) == buffThis->fuelPrices[1])  || ((field == 0 || field == 5) && atof(string) == buffThis->fuelPrices[2]) || ((field == 0 || field == 6) && atof(string) == buffThis->fuelPrices[3]) || ((field == 0 || field == 7) && atoi(string) == buffThis->rating) )
+        {
+            if(result == NULL)
+            {
+                result = (GSDesc*)malloc(sizeof(GSDesc));
+                buff = result;
+                PrepareStruct(buff);
+                CopyStruct(buff, buffThis);
+                buff->prev = NULL;
+            }
+            else
+            {
+                buff->next = (GSDesc*)malloc(sizeof(GSDesc));
+                buff->next->prev = buff;
+                buff = buff->next;
+                PrepareStruct(buff);
+                CopyStruct(buff, buffThis);
+            }
+        }
+    }
     if(result != NULL) OutputMenu(result);
     else
         puts("Ничего не найдено!"), system("pause");
