@@ -26,9 +26,9 @@ void Help();                                    //Справка
 
 int ListLen(GSDesc*);                           //Длина списка
 GSDesc* DeleteItem(GSDesc*, int);               //Удаление элемента из списка
-void Sort(GSDesc**, int, int);                //Сортировка по полю
-void Swap(GSDesc*, int, int);               //Поменять местами 2 элемента
-void GetItem(GSDesc*, int, char);               //Вывод АЗС по заданным параметрам
+void Sort(GSDesc**, int, int);                  //Сортировка по полю    СДЕЛАТЬ
+void Swap(GSDesc*, int, int);                   //Поменять местами 2 элемента
+void GetItem(GSDesc*, int, char);               //Вывод АЗС по заданным параметрам  СДЕЛАТЬ
 GSDesc* ReverseList(GSDesc*);                   //Реверс списка
 
 GSDesc* PushBack(GSDesc*, GSDesc*);             //Добавление в конец
@@ -345,7 +345,7 @@ void Sort(GSDesc** Stations, int field, int mode)                  //Сортировка:
     n = ListLen(*Stations);
     if(field == 1)
     {
-        for(i = 1, buffThis = *Stations; i < n-1; buffThis = buffThis->next, i++)
+        for(i = 1, buffThis = *Stations; i <= n; buffThis = buffThis->next, i++)
         {
             for(j = 1, temp = *Stations; temp->next != NULL; temp = temp->next, j++)
             if(strcmp(buffThis->name, temp->name) < 0)
@@ -354,17 +354,17 @@ void Sort(GSDesc** Stations, int field, int mode)                  //Сортировка:
     }
     else if(field == 2)
     {
-        for(i = 1, buffThis = *Stations; i < n-1; buffThis = buffThis->next, i++)
+        for(i = 1, buffThis = *Stations; i <= n; buffThis = buffThis->next, i++)
         {
             for(j = 1, temp = *Stations; temp->next != NULL; temp = temp->next, j++)
             if(strcmp(buffThis->address, temp->address) < 0)
                 Swap(*Stations, i,j);
         }
     }
-    else if(field > 2)
+    else if(field > 2 && field < 7)
     {
         field-=3;
-        for(i = 1, buffThis = *Stations; i < n-1; buffThis = buffThis->next, i++)
+        for(i = 1, buffThis = *Stations; i <= n; buffThis = buffThis->next, i++)
         {
             for(j = 1, temp = *Stations ; temp->next != NULL; temp = temp->next, j++)
             {
@@ -375,10 +375,10 @@ void Sort(GSDesc** Stations, int field, int mode)                  //Сортировка:
     }
     else if(field == 7)
     {
-        for(i = 1, buffThis = *Stations; i < n; i++, buffThis = buffThis->next)
-			for(j = 1, temp = buffThis->next; j < n; j++, temp = temp->next)
+        for(i = 1, buffThis = *Stations; i <= n; i++, buffThis = buffThis->next)
+			for(j = 1, temp = *Stations; j <= n; j++, temp = temp->next)
 			{
-				if(buffThis->rating > temp->rating)
+				if(buffThis->rating < temp->rating)
 					Swap(*Stations, i, j);
 			}
     }
