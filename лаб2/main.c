@@ -24,8 +24,8 @@ int ListActions();                              //Действия со списком
 
 int ListLen(GSDesc*);                           //Длина списка
 GSDesc* DeleteItem(GSDesc*);                    //Удаление элемента из списка
-GSDesc* SortByRating(GSDesc*);                  //Сортировка по убыванию рейтинга
-void Swap(GSDesc**);                            //Поменять местами 2 элемента
+void Sort(GSDesc**, int);                       //Сортировка по полю
+void Swap(GSDesc*,int,int);                     //Поменять местами 2 элемента
 void GetItem(GSDesc*);                          //Вывод АЗС по заданным параметрам
 
 GSDesc* PushBack(GSDesc*, GSDesc*);             //Добавление в конец
@@ -48,7 +48,7 @@ int main()
     setlocale(LC_ALL, "russian");
     GSDesc*    First = NULL;                    //Начало списка
     GSDesc*    GResult = NULL;                  //Начало списка результата
-    int MenuItem, len;
+    int MenuItem, len, index1, index2, field;
     do
     {
         MenuItem = Menu();
@@ -74,10 +74,10 @@ int main()
                     do
                     {
                         MenuItem = ListActions();
+                        len = ListLen(First);
                         switch(MenuItem)
                         {
                             case 1:
-                                len = ListLen(First);
                                 printf("Количество элементов в списке: %d\n",len);
                                 system("pause");
                                 break;
@@ -85,10 +85,27 @@ int main()
                                 First = DeleteItem(First);
                                 break;
                             case 3:
-                                Swap(&First);
+                                system("cls");
+                                printf("Введите два номера элементов для перестановки(от 1 до %d): ", len);
+                                do
+                                {
+                                    scanf("%d %d", &index1, &index2);
+                                    if(index1 < 1 || index1 > len || index2 < 1 || index2 > len)
+                                        printf("Введенные номера должны быть от 1 до %d!\n", len);
+                                } while(index1 < 1 || index1 > len || index2 < 1 || index2 > len);
+                                Swap(First, index1, index2);
+                                break;
                                 break;
                             case 4:
-                                First = SortByRating(First);
+                                system("cls");
+                                puts("Выберете поле для сортировки:\n1 - название, 2 - адрес, 3 - цена на 92 бензин,4 - цена на 95 бензин\n5 - цена на 98 бензин, 6 - цена на дизель, 7 - рейтинг");
+                                do
+                                {
+                                    scanf("%d", &field);
+                                    if(field < 1 || field > 7) puts("Поля с таким номером нет!");
+                                } while(field < 1 || field > 7);
+                                Sort(&First, field);
+                                break;
                                 break;
                             case 5:
                                 GetItem(First);
@@ -280,38 +297,59 @@ GSDesc* DeleteItem(GSDesc* Stations)
     return Stations;
 }
 
-GSDesc* SortByRating(GSDesc* Stations)                  //Сортировка по рейтингу по убыванию
+void Sort(GSDesc** Stations, int field)                  //Сортировка: адрес, название, цена на 92,95,98,дизель, рейтинг
 {
+    system("cls");
     GSDesc* result = NULL;
     GSDesc* temp = NULL;
     GSDesc* buff = NULL;
-    int num;
-    for(num = 10; ListLen(result) != ListLen(Stations) ; num--)
+    GSDesc* buffThis = NULL;
+    int num,
+        i,
+        j,
+        n;
+    n = ListLen(*Stations);
+    if(field == 1)
     {
-        for(temp = Stations ; temp != NULL ; temp = temp->next)
+        for(i = 1, buffThis = *Stations; i <= n; buffThis = buffThis->next, i++)
         {
-            if(temp->rating == num)
+            for(j = 1, temp = *Stations; temp->next != NULL; temp = temp->next, j++)
+            if(strcmp(buffThis->name, temp->name) < 0)
+                Swap(*Stations, i,j);
+        }
+    }
+    else if(field == 2)
+    {
+        for(i = 1, buffThis = *Stations; i <= n; buffThis = buffThis->next, i++)
+        {
+            for(j = 1, temp = *Stations; temp->next != NULL; temp = temp->next, j++)
+            if(strcmp(buffThis->address, temp->address) < 0)
+                Swap(*Stations, i,j);
+        }
+    }
+    else if(field > 2 && field < 7)
+    {
+        field-=3;
+        for(i = 1, buffThis = *Stations; i <= n; buffThis = buffThis->next, i++)
+        {
+            for(j = 1, temp = *Stations ; temp->next != NULL; temp = temp->next, j++)
             {
-                if(result == NULL)
-                {
-                    result = (GSDesc*)malloc(sizeof(GSDesc));
-                    buff = result;
-                    CopyStruct(result, temp);
-                }
-                else
-                {
-                    buff->next = (GSDesc*)malloc(sizeof(GSDesc));
-                    buff = buff->next;
-                    CopyStruct(buff, temp);
-                }
+                if(buffThis->fuelPrices[field] < temp->fuelPrices[field])
+                    Swap(*Stations, i,j);
             }
         }
     }
-    if(result == NULL) puts("Упс... Что-то пошло не так! Попробуйте еще раз!");
-    else puts("Сортировка прошла успешно!");
-    Stations = free_list(Stations);
+    else if(field == 7)
+    {
+        for(i = 1, buffThis = *Stations; i <= n; i++, buffThis = buffThis->next)
+			for(j = 1, temp = *Stations; j <= n; j++, temp = temp->next)
+			{
+				if(buffThis->rating < temp->rating)
+					Swap(*Stations, i, j);
+			}
+    }
+    puts("Сортировка прошла успешно!");
     system("pause");
-    return result;
 }
 
 void GetItem(GSDesc* Stations)
@@ -483,63 +521,30 @@ GSDesc* PushAnyPlace(GSDesc* Stations)                  //Добавление в любое мес
     return Stations;
 }
 
-void Swap(GSDesc** Stations)                             //Поменять местами 2 элемента
+void Swap(GSDesc* Stations, int first, int second)                             //Поменять местами 2 элемента
 {
     GSDesc* gFirst = NULL;
     GSDesc* gSecond = NULL;
     GSDesc* buff = NULL;
-    GSDesc* buff2 = NULL;
-    GSDesc* buff3 = NULL;
-    int first,
-        second,
-        temp,
-        i;
-    printf("Введите 2 номера элементов, которые хотите поменять местами(всего %d элементов): ", ListLen(*Stations));
-    do
+    int i,
+        temp;
+    if(first > second)
     {
-        scanf("%d %d", &first, &second);
-        if(first < 1 || second < 1 || first > ListLen(*Stations) || second > ListLen(*Stations)) printf("Данных элементов нет в списке, выберите от 1 до %d\n", ListLen(*Stations));
-    } while(first < 1 || second < 1 || first > ListLen(*Stations) || second > ListLen(*Stations));
+        temp = first;
+        first = second;
+        second = temp;
+    }
     if(first != second)
     {
-        if(first > second)
-        {
-            temp = second;
-            second = first;
-            first = second;
-        }
-        for(i = 1, gFirst = *Stations; i < first; i++, gFirst = gFirst->next);
-        for(i = 1, gSecond = *Stations; i < second; i++, gSecond = gSecond->next);
-        if(first == 1)
-        {
-            for(buff = *Stations; buff->next != gSecond; buff = buff->next);
-            buff->next = gFirst;
-            buff = gFirst->next;
-            buff2 = gSecond->next;
-            gFirst->next = buff2;
-            gSecond->next = buff;
-            *Stations = gSecond;
-        }
-        else if(second - first == 1)
-        {
-            for(buff = *Stations; buff->next != gFirst; buff = buff->next);
-            buff->next = gSecond;
-            buff2 = gSecond->next;
-            gSecond->next = gFirst;
-            gFirst->next = buff2;
-        }
-        else
-        {
-            for(buff = *Stations; buff->next != gFirst; buff = buff->next);
-            for(buff2 = *Stations; buff2->next != gSecond; buff2 = buff2->next);
-            buff3 = gFirst->next;
-            buff->next = gSecond;
-            buff2->next = gFirst;
-            gFirst->next = gSecond->next;
-            gSecond->next = buff3;
-        }
+        buff = (GSDesc*)malloc(sizeof(GSDesc));
+        PrepareStruct(buff);
+        for(i = 1, gFirst = Stations; i < first; i++, gFirst = gFirst->next);
+        for(i = 1, gSecond = Stations; i < second; i++, gSecond = gSecond->next);
+        CopyStruct(buff, gFirst);
+        CopyStruct(gFirst, gSecond);
+        CopyStruct(gSecond, buff);
+        free(buff);
     }
-    system("pause");
 }
 //------------------------------------------------------ВВОД------------------------------------------------------
 void InputText(char* string)
@@ -668,7 +673,7 @@ int PrepareStruct(GSDesc* Station)
         Station->address = (char*)malloc((MAXLEN+1)*sizeof(char));
         for(i = 0; i < 4; i++) Station->fuelPrices[i] = 0;
         Station->rating = 0;
-        Station->next = NULL;
+        //Station->next = NULL;
         res++;
     }
     return res;

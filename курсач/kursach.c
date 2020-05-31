@@ -5,7 +5,6 @@
 #include <string.h>
 
 #define MAXLEN 80
-#define DBG puts("DBG");
 
 typedef struct Gaslist
 {
@@ -18,39 +17,41 @@ typedef struct Gaslist
 } GSDesc;
 
 /*----------------------------ФУНКЦИИ------------------------------*/
-int Menu();                                     //Меню
-int ListActions();                              //Действия со списком
-void OutputMenu(GSDesc*);                       //Меню вывода
-GSDesc* InputMenu(GSDesc*);                     //Меню выбора ввода
-void Help();                                    //Справка
+int Menu();                                     //Меню+
+int ListActions();                              //Действия со списком+
+void OutputMenu(GSDesc*);                       //Меню вывода+
+GSDesc* InputMenu(GSDesc*);                     //Меню выбора ввода+
+void Help();                                    //Справка+
 
-int ListLen(GSDesc*);                           //Длина списка
-GSDesc* DeleteItem(GSDesc*, int);               //Удаление элемента из списка
-void Sort(GSDesc**, int, int);                  //Сортировка по полю
-void Swap(GSDesc*, int, int);                   //Поменять местами 2 элемента
-void GetItem(GSDesc*, int);                     //Вывод АЗС по заданным параметрам
-GSDesc* ReverseList(GSDesc*);                   //Реверс списка
+int ListLen(GSDesc*);                           //Длина списка+
+GSDesc* DeleteItem(GSDesc*, int);               //Удаление элемента из списка+
+void Sort(GSDesc**, int, int);                  //Сортировка по полю+
+void Swap(GSDesc*, int, int);                   //Поменять местами 2 элемента+
+void GetItem(GSDesc*, int);                     //Вывод АЗС по заданным параметрам+
+void EditItem(GSDesc*, int);                    //Изменение элемента    СДЕЛАТЬ
+GSDesc* ReverseList(GSDesc*);                   //Реверс списка+
 
-GSDesc* PushBack(GSDesc*, GSDesc*);             //Добавление в конец
-GSDesc* PushForward(GSDesc*, GSDesc*);          //Добавление в начало
-GSDesc* PushAnyPlace(GSDesc*);                  //Добавление в любое место
-GSDesc* InputStations();                        //Ввод данных об АЗС
-GSDesc* Process(GSDesc*);                       //Обработка данных
+GSDesc* PushBack(GSDesc*, GSDesc*);             //Добавление в конец+
+GSDesc* PushForward(GSDesc*, GSDesc*);          //Добавление в начало+
+GSDesc* PushAnyPlace(GSDesc*);                  //Добавление в любое место+
+GSDesc* InputStations();                        //Ввод данных об АЗС+
+GSDesc* Process(GSDesc*);                       //Обработка данных+
 
-int PrepareStruct(GSDesc*);                     //Выделение памяти для полей структуры
-void CopyStruct(GSDesc*, GSDesc*);              //Копирование структуры
+int PrepareStruct(GSDesc*);                     //Выделение памяти для полей структуры+
+void CopyStruct(GSDesc*, GSDesc*);              //Копирование структуры+
 
-void OutputGasStationsTable(GSDesc*);           //Вывод информации в виде таблицы
-void OutputGasStationsText(GSDesc*);            //Вывод информации в виде текста
-void OutputGasStationsTableReverse(GSDesc*);    //Вывод информации в виде таблицы с конца
-void OutputGasStationsTextReverse(GSDesc*);     //Вывод информации в виде текста с конца
+void OutputGasStationsTable(GSDesc*);           //Вывод информации в виде таблицы+
+void OutputGasStationsText(GSDesc*);            //Вывод информации в виде текста+
+void OutputGasStationsTableReverse(GSDesc*);    //Вывод информации в виде таблицы с конца+
+void OutputGasStationsTextReverse(GSDesc*);     //Вывод информации в виде текста с конца+
 
-GSDesc* InputTextFile(GSDesc*);                 //Ввод текста с файла
-GSDesc* fillStruct(char* string);               //Заполняем структуры из данных файла
-void OutputFile(GSDesc*);                       //Вывод в файл
+void InputText(char*);                          //Ввод строки+
+GSDesc* InputTextFile();                        //Ввод текста с файла+
+GSDesc* fillStruct(char* string);               //Заполняем структуры из данных файла+
+void OutputFile(GSDesc*);                       //Вывод в файл+
 
-GSDesc* free_station(GSDesc*);                  //Освобождение памяти одной АЗС
-GSDesc* free_list(GSDesc*);                     //Освобождение памяти списка АЗС
+GSDesc* free_station(GSDesc*);                  //Освобождение памяти одной АЗС+
+GSDesc* free_list(GSDesc*);                     //Освобождение памяти списка АЗС+
 /*-----------------------------------------------------------------*/
 int main()
 {
@@ -145,6 +146,15 @@ int main()
                                 GetItem(First, field);
                                 break;
                             case 6: //изменение
+                                system("cls");
+                                printf("Введите номер элемента, который хотите изменить(от 1 до %d): ", len);
+                                do
+                                {
+                                    scanf("%d", &index1);
+                                    if(index1 < 1 || index1 > len)
+                                        printf("Введенный номер должен быть от 1 до %d!\n", len);
+                                } while(index1 < 1 || index1 > len);
+                                EditItem(First, index1);
                                 break;
                         }
                     } while(MenuItem != 0);
@@ -266,14 +276,14 @@ GSDesc* InputMenu(GSDesc* Stations)                       //Меню выбора ввода
         puts("3 - Добавить на определенное место");
         puts("4 - Ввести полностью заново");
         puts("5 - Получить данные из файла");
-        puts("6 - Назад");
+        puts("0 - Назад");
         do
         {
             scanf("%d", &item);
-            if(item < 0 || item > 6) puts("Данного пункта меню не существует");
-        } while(item < 0 || item > 6);
+            if(item < 0 || item > 5) puts("Данного пункта меню не существует");
+        } while(item < 0 || item > 5);
         fflush(stdin);
-        if(item < 3) NewStations = InputStations();
+        if(item > 0 && item < 3) NewStations = InputStations();
         if(item == 1) Stations = PushForward(NewStations, Stations);
         else if(item == 2) Stations = PushBack(NewStations, Stations);
         else if(item == 3) Stations = PushAnyPlace(Stations);
@@ -285,9 +295,9 @@ GSDesc* InputMenu(GSDesc* Stations)                       //Меню выбора ввода
         else if(item == 5)
         {
             Stations = free_list(Stations);
-            Stations = InputTextFile(Stations);
+            Stations = InputTextFile();
         }
-    }while(item != 6);
+    }while(item != 0);
     return Stations;
 }
 
@@ -301,9 +311,9 @@ void Help()
     puts("рейтинг выше 7, цена на 98 бензин ниже 54");
     puts("  Также Вам доступны следующие действия над списком:");
     puts("узнать кол-во АЗС в списке, удалить одну АЗС из списка,");
-    puts("поменять местами 2 АЗС в списке, отсортировать по убыванию рейтинга");
+    puts("поменять местами 2 АЗС в списке, отсортировать список");
     puts("(при сортировке изменяется ИЗНАЧАЛЬНЫЙ список, будьте внимательны!)");
-    puts("поиск АЗС по определенному параметру\n");
+    puts("поиск АЗС по определенному параметру, изменение данных одной АЗС\n");
     puts("  Внимание! Кол-во букв в названии и адресе не могут превышать 80!\n");
     system("pause");
 }
@@ -464,6 +474,34 @@ void GetItem(GSDesc* Stations, int field)       //Поиск: 1: адрес, 2: название, 
     else
         puts("Ничего не найдено!"), system("pause");
     result = free_list(result);
+}
+
+void EditItem(GSDesc* Stations, int index)
+{
+    GSDesc* buff = Stations;
+    int i;
+    for(i = 1; i < index; i++, buff = buff->next)
+    system("cls");
+    printf("Введите название АЗС. Текущее название: %s\n", buff->name);
+    InputText(buff->name);
+    printf("\nВведите адрес. Текущий адрес: %s\n", buff->address);
+    InputText(buff->address);
+    puts("\nВведите цены на топливо(92,95,98,Дизель). Цена не выше 10000");
+    printf("Текущие значения: %.2f %.2f %.2f %.2f\n", buff->fuelPrices[0], buff->fuelPrices[1], buff->fuelPrices[2], buff->fuelPrices[3]);
+    for(i = 0; i < 4; i++)
+    {
+        do
+        {
+            scanf("%f", &(buff->fuelPrices[i]));
+            if(buff->fuelPrices[i] < 1.0 || buff->fuelPrices[i] > 10000.0) puts("Цена от 1 до 10000");
+        } while(buff->fuelPrices[i] < 1.0 || buff->fuelPrices[i] > 10000.0);
+    }
+    printf("Введите рейтинг АЗС от 1 до 10. Текущий рейтинг: %d\n", buff->rating);
+    do
+    {
+        scanf("%d", &(buff->rating));
+        if(buff->rating < 1 || buff->rating > 10) puts("Рейтинг от 1 до 10!");
+    } while(buff->rating < 1 || buff->rating > 10);
 }
 
 GSDesc* Process(GSDesc* Stations)                     //Обработка данных
@@ -667,7 +705,7 @@ GSDesc* InputStations()
     return first;
 }
 
-GSDesc* InputTextFile(GSDesc* First)
+GSDesc* InputTextFile()
 {
     system("cls");
     GSDesc* newFirst = NULL;
@@ -797,12 +835,20 @@ GSDesc* fillStruct(char* string)
         for(i = 0; i < 4; i++)
         {
             if(buffi > 2+i)
-                result->fuelPrices[i] = atof(buff[2+i]);
+                if(atof(buff[2+i]) > 0)
+                   result->fuelPrices[i] = atof(buff[2+i]);
+                else
+                    result->fuelPrices[i] = 0.0;
             else
                 result->fuelPrices[i] = 0.0;
         }
         if(buffi > 6)
-            result->rating = atoi(buff[6]);
+            if(atoi(buff[6]) > 0 && atoi(buff[6]) < 11)
+                result->rating = atoi(buff[6]);
+            else if(atoi(buff[6]) > 0 && atoi(buff[6]) > 10)
+                result->rating = 10;
+            else
+                result->rating = 0;
         else
             result->rating = 0;
     }
@@ -897,7 +943,6 @@ void OutputFile(GSDesc* first)
     GSDesc* buff = first;
     char filename[128];
     int ans,
-        i,
         namelen,
         addresslen;
     ans = 0;
