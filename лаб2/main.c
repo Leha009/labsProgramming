@@ -175,7 +175,7 @@ int ListActions()
     puts("1 - Узнать количество элементов списка АЗС");
     puts("2 - Удалить элемент списка АЗС");
     puts("3 - Поменять местами элементы списка АЗС");
-    puts("4 - Сортировка элементов списка АЗС по рейтингу(по убыв.)");
+    puts("4 - Сортировка элементов списка АЗС(по возр.)");
     puts("5 - Поиск АЗС по определенному критерию");
     puts("6 - Назад");
     do
@@ -225,8 +225,8 @@ GSDesc* InputMenu(GSDesc* Stations)                       //Меню выбора ввода
         do
         {
             scanf("%d", &item);
-            if(item < 0 || item > 5) puts("Данного пункта меню не существует");
-        } while(item < 0 || item > 5);
+            if(item < 1 || item > 5) puts("Данного пункта меню не существует");
+        } while(item < 1 || item > 5);
         fflush(stdin);
         if(item < 3) NewStations = InputStations();
         if(item == 1) Stations = PushForward(NewStations, Stations);

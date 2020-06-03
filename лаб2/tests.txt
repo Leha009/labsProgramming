@@ -14,27 +14,11 @@ smth
 60
 9
 1
-sadlksa
--557.1;51.0
-52
-53,1
-53,4
-52,7
-8
-1
 Dillimore
 Dillimore village
 50
 50,2
 50,7
 50,4
-10
-1
-Last
-Any
-5
-7
-75
-2
 10
 0

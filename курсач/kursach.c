@@ -364,45 +364,10 @@ void Sort(GSDesc** Stations, int field, int mode)                  //Сортировка:
         j,
         n;
     n = ListLen(*Stations);
-    if(field == 1)
-    {
-        for(i = 1, buffThis = *Stations; i <= n; buffThis = buffThis->next, i++)
-        {
-            for(j = 1, temp = *Stations; temp->next != NULL; temp = temp->next, j++)
-            if(strcmp(buffThis->name, temp->name) < 0)
+    for(i = 1, buffThis = *Stations; i <= n; buffThis = buffThis->next, i++)
+        for(j = 1, temp = *Stations; temp->next != NULL; temp = temp->next, j++)
+            if( (field == 1 && strcmp(buffThis->name, temp->name) < 0) || (field == 2 && strcmp(buffThis->address, temp->address) < 0) || (field > 2 && field < 7 && buffThis->fuelPrices[field-3] < temp->fuelPrices[field-3]) || (field == 7 && buffThis->rating < temp->rating) )
                 Swap(*Stations, i,j);
-        }
-    }
-    else if(field == 2)
-    {
-        for(i = 1, buffThis = *Stations; i <= n; buffThis = buffThis->next, i++)
-        {
-            for(j = 1, temp = *Stations; temp->next != NULL; temp = temp->next, j++)
-            if(strcmp(buffThis->address, temp->address) < 0)
-                Swap(*Stations, i,j);
-        }
-    }
-    else if(field > 2 && field < 7)
-    {
-        field-=3;
-        for(i = 1, buffThis = *Stations; i <= n; buffThis = buffThis->next, i++)
-        {
-            for(j = 1, temp = *Stations ; temp->next != NULL; temp = temp->next, j++)
-            {
-                if(buffThis->fuelPrices[field] < temp->fuelPrices[field])
-                    Swap(*Stations, i,j);
-            }
-        }
-    }
-    else if(field == 7)
-    {
-        for(i = 1, buffThis = *Stations; i <= n; i++, buffThis = buffThis->next)
-			for(j = 1, temp = *Stations; j <= n; j++, temp = temp->next)
-			{
-				if(buffThis->rating < temp->rating)
-					Swap(*Stations, i, j);
-			}
-    }
     if(mode)        //убывание
         *Stations = ReverseList(*Stations);
     puts("Сортировка прошла успешно!");
