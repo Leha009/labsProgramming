@@ -1,0 +1,28 @@
+typedef struct AnyName
+{
+    int data;                  		//Информация
+	struct AnyName* next;       	//Ссылка на следующую структуру
+} Any;
+
+
+//функция для добавления элемента в кольцевой список после элемента с заданным номером
+
+Any* insert_after(Any* first, int place, Any* toInsert)
+{
+    int i;
+    Any* buff = first;
+    if(place == 0)	//Если нужно добавить в начало
+    {
+        toInsert->next = first;								//делаем first следующим элементом для toInsert
+        for(;buff->next != first; buff = buff->next);		//находим структуру, которая указывает на first
+        buff->next = toInsert;								//меняем указатель на новое начало - toInsert
+        first = toInsert;									//first присваиваем toInsert, чтобы вернуть новое начало
+    }
+    else
+    {
+        for(i = 1; i < place; i++, buff = buff->next);		//находим структуру, после которой нужно добавить новую
+        toInsert->next = buff->next;						//делаем следующей структурой для toInsert ту структуру, которая шла после buff
+        buff->next = toInsert;								//делаем следующей структурой для buff структуру toInsert
+    }
+    return first;
+}

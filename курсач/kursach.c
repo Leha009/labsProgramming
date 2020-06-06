@@ -730,17 +730,20 @@ GSDesc* InputTextFile()
                     for(i = 0; i < strsize; i++)
                         string[i] = text[linebeg+i];
                     string[i] = '\0';
-                    if(newFirst)
+                    if(strlen(string) > 0)
                     {
-                        buff->next = fillStruct(string);
-                        buff->next->prev = buff;
-                        buff = buff->next;
-                    }
-                    else
-                    {
-                        newFirst = fillStruct(string);
-                        buff = newFirst;
-                        buff->prev = NULL;
+                        if(newFirst)
+                        {
+                            buff->next = fillStruct(string);
+                            buff->next->prev = buff;
+                            buff = buff->next;
+                        }
+                        else
+                        {
+                            newFirst = fillStruct(string);
+                            buff = newFirst;
+                            buff->prev = NULL;
+                        }
                     }
                     frows--;
                     while(text[linebeg] != '\n' && text[linebeg] != '\0') linebeg++;
