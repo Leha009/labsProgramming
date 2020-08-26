@@ -1,0 +1,602 @@
+//Сделать
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
+#include <conio.h>
+#include <locale.h>
+#include <string.h>
+#include <windows.h>
+
+#define MAX_LEN 80
+#define MEM_ERROR puts("Ошибка: память не удалось выделить!")
+//--------------------------------------------МЕНЮ И ПОДМЕНЮ--------------------------------------------
+
+int Menu();
+int InputData();                            //Ввод
+int CheckData();                            //Контрольный вывод
+void Help();                                //Справка
+
+//--------------------------------------------Ввод данных--------------------------------------------
+
+char* GenerateDelimiterArray();             //Ввод разделителей
+char* InputKeyWord();                       //Ввод слова
+char** InputTextConsole(int*, char*);       //Ввод текста с консоли
+char** InputTextFile(int*);                 //Ввод текста с файла
+
+//--------------------------------------------Вывод данных--------------------------------------------
+
+void ShowDelimiters(char*);                 //Вывод разделителей
+void ShowKeyWord(char*);                    //Вывод заданного слова
+void ShowTextConsole(char**, int);          //Вывод текста
+void SaveResult(char**, int);               //Сохр рещультата
+
+//--------------------------------------------ОЧИСТКА ПАМЯТИ--------------------------------------------
+
+char* free_str(char*);                      //Освоб. память для строки
+char** free_text(char**, int);              //Освоб. память для текста
+
+//--------------------------------------------ВСЕ ДЛЯ ОБРАБОТКИ--------------------------------------------
+
+int AmountOfWords(char*, char*);            //Счетчик кол-ва слов
+int IsDelimiter(char, char*);               //Проверка на разделитель
+char** ProcessText(char**, int, char*, char*);       //Обработка текста
+
+//--------------------------------------------ПРОГРАММА--------------------------------------------
+
+int main()
+{
+    setlocale(LC_ALL, "RUS");
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+    char **text = NULL,                     //Текст
+         *delims = NULL,                    //разделители
+         *keyword = NULL,                   //Слово
+         **result = NULL;                   //Результат
+    int DelAmount,                          //Кол-во
+        AItems,                             //Доступность пунктов меню
+        selected,                           //Выбранный пункт
+        textrows;
+    AItems = 2; textrows = 0;
+    do
+    {
+        system("cls");
+        selected = Menu();
+        switch(selected)
+        {
+            case 1:
+                Help();
+                break;
+            case 2:
+                selected = InputData();
+                switch(selected)
+                {
+                    case 1:
+                        free_str(delims);
+                        delims = GenerateDelimiterArray();
+                        break;
+                    case 2:
+                        free_str(keyword);
+                        keyword = InputKeyWord();
+                        break;
+                    case 3:
+                        free_text(text, textrows);
+                        text = InputTextConsole(&textrows, delims);
+                        break;
+                    case 4:
+                        free_text(text, textrows);
+                        text = InputTextFile(&textrows);
+                        break;
+                    case 5:
+                        system("cls");
+                        puts("Возвращение в главное меню");
+                        system("pause");
+                        break;
+                    default:
+                        puts("Неверный пункт меню. Выберете пункт меню еще раз.");
+                        system("pause");
+                }
+                break;
+            case 3:
+                selected = CheckData();
+                switch(selected)
+                {
+                    case 1:
+                        ShowDelimiters(delims);
+                        break;
+                    case 2:
+                        ShowKeyWord(keyword);
+                        break;
+                    case 3:
+                        ShowTextConsole(text, textrows);
+                        break;
+                    case 4:
+                        system("cls");
+                        puts("Возвращение в меню");
+                        system("pause");
+                        break;
+                    default:
+                        puts("Неверный пункт меню. Выберете пункт меню еще раз.");
+                        system("pause");
+                }
+                break;
+            case 4:
+                //Обработка
+                free_text(result, textrows);
+                result = ProcessText(text, textrows, keyword, delims);
+                break;
+            case 5:
+                //Вывод результата
+                SaveResult(result, textrows);
+                break;
+            case 0:
+                break;
+            default:
+                puts("Неверный пункт меню. Выберете пункт меню еще раз.");
+                system("pause");
+        }
+    } while(selected != 0);
+    delims = free_str(delims);
+    text = free_text(text, textrows);
+    result = free_text(result, textrows);
+    return 0;
+}
+
+//--------------------------------------------МЕНЮ И ПОДМЕНЮ--------------------------------------------
+
+int Menu()
+{
+    int select;
+    system("cls");
+    puts("*****************МЕНЮ*****************");
+    puts("1 - Справка");
+    puts("2 - Ввод данных");
+    puts("3 - Контрольный вывод данных");
+    puts("4 - Обработка текста");
+    puts("5 - Вывод результата");
+    puts("0 - Выход");
+    puts("Выберете пункт меню");
+    scanf("%d", &select);
+    fflush(stdin);
+    return select;
+
+}
+
+int InputData()
+{
+    system("cls");
+    int select;
+    puts("*****************ВВОД ДАННЫХ*****************");
+    puts("1 - Ввод разделителей");
+    puts("2 - Ввод слова");
+    puts("3 - Ввод текста из консоли");
+    puts("4 - Ввод текста из файла");
+    puts("5 - Назад");
+    scanf("%d", &select);
+    fflush(stdin);
+    return select;
+}
+
+int CheckData()
+{
+    system("cls");
+    int select;
+    puts("*****************КОНТРОЛЬНЫЙ ВЫВОД ДАННЫХ*****************");
+    puts("1 - Вывод разделителей");
+    puts("2 - Вывод заданного слова");
+    puts("3 - Вывод текста");
+    puts("4 - Назад");
+    scanf("%d", &select);
+    fflush(stdin);
+    return select;
+}
+
+void Help()
+{
+    system("cls");
+    puts("  Данная программа предназначена для формирования нового текста, который");
+    puts(" является результатом следующего преобразования исходного текста:");
+    puts(" Из строк введённого текста сформировать другой текст, в котором");
+    puts(" будет вставлено заданное слово после слов, содержащих нечетное количество слов ");
+    puts(" одновременно будут удалены слова, содержащие четное количество символов, ");
+    puts(" если было вставлено заданное слово ");
+    puts("\n  Ввод текста пользователем заканчивается после ввода строки,");
+    puts(" содержащей максимальное количество слов из строк, ввдённых ранее.\n");
+    system("pause");
+}
+
+//--------------------------------------------Ввод данных--------------------------------------------
+char* GenerateDelimiterArray()
+{
+    system("cls");
+    char *Delims = NULL,
+            c;
+    int f,                      //Флаг повтора
+        i,j;                    //Для цикла
+    Delims = (char*)malloc(MAX_LEN+1*sizeof(char));
+    i = 0;
+    if(Delims != NULL)
+    {
+        printf("Построчно введите разделители. Их количество не должно превышать %d!\nВведите уже существующий разделитель, чтобы закончить ввод\n", MAX_LEN);
+        do
+        {
+            c = getchar();
+            f = 1;
+            for(j = 0; f && j < i; j++)
+            {
+                if(c == Delims[j])
+                {
+                    f = 0;
+                }
+            }
+            if(c != '\n' && f)
+            {
+                Delims[i] = c;
+                i++;
+            }
+        } while(i < 8 && f);
+        Delims[i] = '\0';
+    }
+    else MEM_ERROR;
+    system("pause");
+    return Delims;
+}
+
+char* InputKeyWord()
+{
+    system("cls");
+    char *word = NULL;
+    int i,j;
+    word = (char*)malloc(MAX_LEN+1*sizeof(char));
+    if(word != NULL)
+    {
+        puts("Введите длину слова");
+        scanf("%d", &i);
+        printf("Введите слово: ");
+        j = 0;
+        do
+        {
+            {
+                word[j] = getchar();
+                if(word[j] != '\n') j++;
+            }
+        } while(j < i);
+        word[j] = '\0';
+        fflush(stdin);
+    }
+    else MEM_ERROR;
+    return word;
+}
+
+char** InputTextConsole(int *textrows, char *delims)
+{
+    system("cls");
+    char**  text = NULL,        //Текст
+            tpointer = NULL;    //Для realloc
+    int     i,
+            j,
+            f,                  //Флаг
+            max,                //Макс кол-во слов
+            cwords;             //Кол-во слов в строке
+    char    string[MAX_LEN+1],  //Строка
+            c;                  //Введенный символ
+    if(delims == NULL) puts("Введите строку разделителей!");
+    else
+    {
+        *textrows = 0; max = 0;
+        f = 1; i = 0;
+        printf("Введите текст. Длина строки не больше %d символов!\nВвод завершается, если введена строка с количеством слов, \nкоторое совпадает с максимальным количеством слов предыдущих строк\n", MAX_LEN);
+        do
+        {
+            j = 0;
+            do
+            {
+                c = getch();
+                if(c != 13 && c != 8 && !(j == 0 && IsDelimiter(c, delims)))
+                {
+                    string[j] = c;
+                    printf("%c", c);
+                    j++;
+                }
+                else if(c == 8)
+                {
+                    if(j > 0)
+                    {
+                        string[j] = '\0';
+                        printf("\r%s %c", string, c);
+                        j--;
+                    }
+                }
+            } while(j < MAX_LEN && c != 13);
+            string[j] = '\0';
+            if(strlen(string) > 0)
+            {
+                cwords = AmountOfWords(string, delims);
+                if(i > 0 && cwords == max) f = 0;
+                if(max < cwords) max = cwords;
+                text = (char**)realloc(text, (i+1)*sizeof(char*));
+                *(text+i) = (char*)malloc((MAX_LEN+1)*sizeof(char));
+                strcpy(text[i], string);
+                puts("");
+                i++;
+            }
+        } while(f);
+        *textrows = i;
+    }
+    system("pause");
+    return text;
+}
+
+char** InputTextFile(int *textrows)
+{
+    system("cls");
+    char *text = NULL,
+         **result = NULL,
+         *string = NULL;    //Строка
+    FILE *file = NULL;
+    char filename[128];     //Имя файла
+    int ans,            //Ответ
+        i,
+        j,
+        size,           //Размер файла
+        frows,           //Строк в файле
+        cel;            //Текущий элемент result
+    puts("Хотите указать свое имя файла? Введите любое число, отличное от нуля\nИначе будет использован файл in.txt");
+    scanf("%d", &ans);
+    fflush(stdin);
+    if(ans)
+    {
+        printf("Введите имя файла для чтения. Имя файла не должно превышать 128 символов!\nВнимание! Символов на строке максимум %d!\n", MAX_LEN);
+        gets(filename);
+        file = fopen(filename, "r");
+    }
+    else file = fopen("in.txt", "r");
+    if(file != NULL)
+    {
+        fseek(file,0,SEEK_SET);
+        fseek(file,0,SEEK_END);
+        size = ftell(file);
+        rewind(file);
+        text = (char*)malloc(size*sizeof(char));
+        string = malloc((MAX_LEN+1)*sizeof(char));
+        if(text != NULL && string != NULL)
+        {
+            fread(text, size, 1, file);
+            if(fclose(file) == EOF) puts("Error closing!");
+            frows = 0;
+            for(i = 0; i < size; i++)
+            {
+                if(text[i] == '\n') frows++;
+            }
+            result = (char**)malloc(frows*sizeof(char*));
+            if(result != NULL)
+            {
+                cel = 0; i = 0;
+                for(int k = 0; k < frows; k++)
+                {
+                    for(j = 0; j < MAX_LEN && text[cel] != '\n'; j++, cel++)
+                    {
+                        string[j] = text[cel];
+                    }
+                    string[j] = '\0';
+                    if(strlen(string) > 0)
+                    {
+                        result[i] = (char*)malloc((strlen(string)+1)*sizeof(char));
+                        for(j = 0; j < strlen(string)+1; j++)
+                        {
+                            result[i][j] = string[j];
+                        }
+                        i++;
+                    }
+                    while(text[cel] != '\n') cel++;
+                    cel++;
+                }
+            }
+            *textrows = i;
+            free_str(text);
+            free_str(string);
+        }
+    }
+    else puts("Не удалось открыть файл!");
+    system("pause");
+    return result;
+}
+
+//--------------------------------------------ВЫВОД ДАННЫХ--------------------------------------------
+void ShowKeyWord(char *word)
+{
+    system("cls");
+    if(word == NULL) puts("Слово не было задано!");
+    else printf("Введенное слово: %s", word);
+    puts("");
+    system("pause");
+}
+
+void ShowDelimiters(char *delims)
+{
+    system("cls");
+    int i;
+    i = 0;
+    printf("Разделители: ");
+    if(delims == NULL) puts("не заданы!");
+    else
+    {
+            while(delims[i] != '\0')
+        {
+            printf("'%c' ", delims[i]);
+            i++;
+        }
+        puts("");
+    }
+    system("pause");
+}
+
+void ShowTextConsole(char** text, int rows)
+{
+    system("cls");
+    if(text == NULL) puts("Текст не задан!");
+    else
+    {
+        for (int i = 0; i < rows; i++)
+        {
+            puts(*(text+i));
+            //if(text[i][strlen(text[i])] == '\0') puts("END OF STRING");
+        }
+        fflush(stdout);
+    }
+    system("pause");
+}
+
+void SaveResult(char** text, int rows)
+{
+    FILE *file = NULL;
+    char filename[128];
+    int ans;
+    ans = 0;
+    if(text == NULL) puts("Нечего сохранять!");
+    else
+    {
+        puts("Хотите указать имя файла самостоятельно? Введите любое число, отличное от нуля.\nВ противном случае все сохранится в out.txt");
+        scanf("%d", &ans);
+        fflush(stdin);
+        if(ans)
+        {
+            puts("Введите имя файла для сохранения");
+            gets(filename);
+            file = fopen(filename, "w");
+        }
+        else file = fopen("out.txt", "w");
+        for(int i = 0; i < rows; i++)
+        {
+            fputs(*(text+i),file);
+            fprintf(file, "\n");
+        }
+        fclose(file);
+    }
+    system("pause");
+}
+//--------------------------------------------ОЧИСТКА ПАМЯТИ--------------------------------------------
+
+char* free_str(char* str)
+{
+    if(str != NULL)
+    {
+        free(str);
+        str = NULL;
+    }
+    return str;
+}
+
+char** free_text(char** text, int rows)
+{
+    //printf("DEBUG rows = %d", rows);    //DEBUG
+    if(text != NULL)
+    {
+        for(int i = 0; i < rows; i++)
+        {
+            //puts("TEST");   //DEBUG
+            free(*(text+i));
+        }
+        free(text);
+        text = NULL;
+    }
+    return text;
+}
+
+//--------------------------------------------ВСЕ ДЛЯ ОБРАБОТКИ--------------------------------------------
+int AmountOfWords(char *string, char *delims)
+{
+    int Amount,
+        i;
+    i = 1; Amount = 1;
+    do
+    {
+        if(IsDelimiter(string[i], delims) && !IsDelimiter(string[i-1], delims)) Amount++;
+        i++;
+    } while(i < strlen(string));
+    if(IsDelimiter(string[i-1], delims)) Amount--;
+    return Amount;
+}
+
+int IsDelimiter(char symbol, char* delims)
+{
+    int f,
+        i;
+    f = 0; i = 0;
+    while(delims[i] != '\0' && !f)
+    {
+        if(symbol == delims[i]) f = 1;
+        //printf("%c | %c |\n", symbol, delims[i]);
+        i++;
+    }
+    return f;
+}
+
+char** ProcessText(char **text, int rows, char *keyword, char *delims)
+{
+    system("cls");
+    char **result = NULL;
+    int i,
+        j,
+        k,          //Элемент строки result
+        f,          //Флаг того, что вставлено слово
+        letters,    //Кол-во букв
+        word;       //Начало слова
+    if(text == NULL || keyword == NULL || delims == NULL) puts("Сначала введите все исходные данные!");
+    else
+    {
+        result = (char**)malloc(rows*sizeof(char*));
+        if(result != NULL)
+        {
+            for(i = 0; i < rows; i++)
+            {
+                result[i] = (char*)malloc(280*sizeof(char));
+                //result[i] = (char*)malloc((strlen(text[i])+1)*sizeof(char));
+                k = 0; letters = 0; f = 0;
+                if(result[i] != NULL)
+                {
+                    for(j = 0; j < strlen(text[i]); j++, k++)
+                    {
+                        result[i][k] = text[i][j];
+                        if(!IsDelimiter(text[i][j],delims))
+                        {
+                            letters++;
+                        }
+                        else
+                        {
+                            //result[i] = (char*)realloc(result[i], (strlen(result[i])+strlen(keyword))*sizeof(char));
+                            for(f = 0; f < strlen(keyword); f++, k++)
+                            {
+                                result[i][k+1] = keyword[f];
+                            }
+                            result[i][k+1] = delims[0];
+                            k++;
+                            //printf("DEBUG letters = %d\n", letters);
+                            letters = 0;
+                        }
+                    }
+                    printf("| STRLEN = %d | k = %d\n", strlen(result[i]), k); //DEBUG
+                    result[i][k] = '\0';
+                    //puts("IN?");  //DEBUG
+                    //printf("DEBUG letters = %d\n", letters);
+                }
+                else MEM_ERROR;
+            }
+
+            /*if(!IsDelimiter(string[j],delims)) letters++;
+            else
+            {
+                printf("DEBUG | Кол-во симв в %d слове = %d\n", word, letters);
+                letters = 0;
+                word++;
+            }
+            j++;*/
+        }
+        else MEM_ERROR;
+        for(i = 0; i < rows; i++)
+        {
+            if(result[i] != NULL) puts(result[i]);
+        }
+    }
+    system("pause");
+    return result;
+}
